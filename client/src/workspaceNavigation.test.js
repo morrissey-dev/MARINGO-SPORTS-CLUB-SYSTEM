@@ -10,7 +10,7 @@ test('guest or malformed roles do not expose staff links',()=>{
 });
 test('registrars see registration, payments, reports but no store or private guardian review',()=>{
   assert.deepEqual(names(['REG']),[
-    'workspace-registration','workspace-directory','workspace-payments','workspace-reports']);
+    'workspace-registration','workspace-group-intake','workspace-directory','workspace-payments','workspace-reports']);
 });
 test('store clerk sees sales, equipment and reports, not registrations',()=>{
   assert.deepEqual(names(['STO']),['workspace-store','workspace-equipment','workspace-reports']);

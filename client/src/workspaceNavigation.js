@@ -2,6 +2,7 @@
 // Backend resource permissions remain authoritative; links do not grant access.
 export const WORKSPACE_LINKS = Object.freeze([
   {id:'workspace-registration', label:'Member registration', roles:['REG','ADM']},
+  {id:'workspace-group-intake', label:'Group intake', roles:['REG','ADM']},
   {id:'workspace-directory', label:'Member directory', roles:['REG','ADM']},
   {id:'workspace-guardian', label:'Guardian review', roles:['ADM','MGT']},
   {id:'workspace-payments', label:'Payments', roles:['ADM','REG','FIN','MGT']},

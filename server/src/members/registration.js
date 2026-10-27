@@ -36,6 +36,20 @@ export async function registerMember(pool,{actorId,body,key,onDate=kenyaDate()})
       return {status:existing.response_status,data:existing.response_json,replayed:true};
     }
     const validated=validateMember(body,onDate);
+    const data=await createMemberRecords(client,{actorId,validated,onDate});
+    await client.query(`UPDATE idempotency_requests SET response_status=201,response_json=$1 WHERE actor_user_id=$2 AND operation='member.create' AND key_hash=$3`,
+      [JSON.stringify(data),actorId,keyHash]);
+    await client.query('COMMIT');
+    return {status:201,data,replayed:false};
+  } catch(err){
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {client.release();}
+}
+
+// Shared atomic record creation for individual and batch intake.
+// The caller owns BEGIN/COMMIT; never commit an incomplete group.
+export async function createMemberRecords(client,{actorId,validated,onDate,groupRegistrationId=null}) {
     if(validated.organizationId){
       const org=await client.query('SELECT id FROM organizations WHERE id=$1',[validated.organizationId]);
       if(!org.rowCount) throw sqlError('ORGANIZATION_NOT_FOUND','The organization does not exist.');
@@ -60,8 +74,8 @@ export async function registerMember(pool,{actorId,body,key,onDate=kenyaDate()})
         VALUES($1,'guardian',$2,$3,$4,true) RETURNING id`,[m.id,validated.guardian.fullName,validated.guardian.relationship,validated.guardian.phone]);
       await client.query('INSERT INTO guardian_consents(member_id,guardian_contact_id) VALUES($1,$2)',[m.id,contact.rows[0].id]);
     }
-    const membership=await client.query(`INSERT INTO memberships(member_id,registration_type,organization_id,registered_on,status)
-      VALUES($1,$2,$3,$4,'pending') RETURNING id`,[m.id,validated.registrationType,validated.organizationId,onDate]);
+    const membership=await client.query(`INSERT INTO memberships(member_id,registration_type,organization_id,group_registration_id,registered_on,status)
+      VALUES($1,$2,$3,$4,$5,'pending') RETURNING id`,[m.id,validated.registrationType,validated.organizationId,groupRegistrationId,onDate]);
     for(const [index,sportId] of validated.sportIds.entries()){
       await client.query('INSERT INTO member_sport_preferences(member_id,sport_id,priority) VALUES($1,$2,$3)',[m.id,sportId,index+1]);
     }
@@ -75,12 +89,5 @@ export async function registerMember(pool,{actorId,body,key,onDate=kenyaDate()})
     const data={id:String(m.id),membershipNumber:m.membership_number,fullName:validated.fullName,ageBand:validated.ageBand,
       registrationType:validated.registrationType,guardianConsent:validated.age<18?'pending':'not_required',
       memberStatus:m.status,membershipStatus:'pending',membershipFee:validated.fee,paymentStatus:'outstanding',sportIds:validated.sportIds};
-    await client.query(`UPDATE idempotency_requests SET response_status=201,response_json=$1 WHERE actor_user_id=$2 AND operation='member.create' AND key_hash=$3`,
-      [JSON.stringify(data),actorId,keyHash]);
-    await client.query('COMMIT');
-    return {status:201,data,replayed:false};
-  } catch(err){
-    await client.query('ROLLBACK');
-    throw err;
-  } finally {client.release();}
+    return data;
 }

@@ -13,7 +13,7 @@
   "scripts": {
     "dev:client": "npm run dev --workspace client",
     "dev:server": "npm run dev --workspace server",
-    "test": "npm run test --workspace server && node --test client/src/workspaceNavigation.test.js",
+    "test": "npm run test --workspace server && node --test client/src/*.test.js",
     "db:check": "npm run db:check --workspace server",
     "build": "npm run build --workspace client",
     "db:migrate": "npm run db:migrate --workspace server",

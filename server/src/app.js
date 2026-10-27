@@ -5,6 +5,7 @@ import { getPool } from './db/pool.js';
 import { authRouter } from './auth/routes.js';
 import { sportsRouter } from './sports/routes.js';
 import { membersRouter } from './members/routes.js';
+import { groupRegistrationRouter } from './members/groupRoutes.js';
 import { organizationsRouter } from './organizations/routes.js';
 import { paymentsRouter } from './payments/routes.js';
 import { teamsRouter } from './teams/routes.js';
@@ -33,6 +34,7 @@ export function createApp() {
   app.use('/api/v1/auth', (_req, res, next) => { res.setHeader('Cache-Control','no-store'); next(); }, authRouter());
   app.use('/api/v1/sports', sportsRouter());
   app.use('/api/v1/members', membersRouter());
+  app.use('/api/v1/group-registrations', groupRegistrationRouter());
   app.use('/api/v1/organizations', organizationsRouter());
   app.use('/api/v1/payments', paymentsRouter());
   app.use('/api/v1/teams', teamsRouter());

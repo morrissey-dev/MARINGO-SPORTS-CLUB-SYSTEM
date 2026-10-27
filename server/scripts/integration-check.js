@@ -138,6 +138,37 @@ try {
   expectStatus(badAge,422,'ineligible age');
   passed('member registration, KSh 1,000 assessed fee, idempotent retry and age validation');
 
+  // Part 14: atomic bulk group registration, idempotency, group-linkage and charges.
+  const madeOrg=await call(base,'POST','/organizations',{cookie,csrf:staff.csrfToken,
+    body:{name:'Fictional Integration School',type:'school'}});
+  const org=expectStatus(madeOrg,201,'create demo school');
+  const batchBody={organizationId:String(org.id),members:[
+    {...register,fullName:'Fictional Group Adult One',phone:'',schoolOrCollege:'Fictional Integration School'},
+    {...register,fullName:'Fictional Group Adult Two',phone:'',schoolOrCollege:'Fictional Integration School'}
+  ].map(({registrationType,organizationId,...m})=>m)};
+  const groupKey=key();
+  const registeredGroup=await call(base,'POST','/group-registrations',{
+    cookie,csrf:staff.csrfToken,body:batchBody,idempotencyKey:groupKey});
+  const group=expectStatus(registeredGroup,201,'register two group members');
+  assert.equal(group.count,2);
+  assert.equal(group.totalBilled,'1000.00');
+  const replayGroup=await call(base,'POST','/group-registrations',{
+    cookie,csrf:staff.csrfToken,body:batchBody,idempotencyKey:groupKey});
+  expectStatus(replayGroup,201,'group idempotency retry');
+  assert.equal(replayGroup.data.replayed,true);
+  const groupLinked=await scopedPool.query(`SELECT count(*)::int AS members,
+    COALESCE(sum(c.amount),0)::text AS billed FROM memberships ms
+    JOIN membership_charges mc ON mc.membership_id=ms.id JOIN charges c ON c.id=mc.charge_id
+    WHERE ms.group_registration_id=$1`,[group.groupId]);
+  assert.equal(groupLinked.rows[0].members,2);
+  assert.equal(Number(groupLinked.rows[0].billed),1000);
+  const rejectedGroup=await call(base,'POST','/group-registrations',{
+    cookie,csrf:staff.csrfToken,body:{...batchBody,members:[batchBody.members[0],{...batchBody.members[1],dateOfBirth:'2020-01-01'}]},
+    idempotencyKey:key()});
+  expectStatus(rejectedGroup,422,'group intake rejects ineligible member');
+  passed('atomic group intake, KSh 500/member, idempotency and row-level validation');
+
+
   const charges=await scopedPool.query("SELECT id,amount FROM charges WHERE member_id=$1 AND charge_type='membership'",[member.id]);
   assert.equal(charges.rows.length,1);
   const chargeId=String(charges.rows[0].id);

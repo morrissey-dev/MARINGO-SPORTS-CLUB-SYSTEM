@@ -4,6 +4,7 @@ import StorePanel from './StorePanel.jsx';
 import EventsPanel from './EventsPanel.jsx';
 import SportsTeamsPanel from './SportsTeamsPanel.jsx';
 import RegistrationPanel from './RegistrationPanel.jsx';
+import GroupBatchPanel from './GroupBatchPanel.jsx';
 import MemberDirectory from './MemberDirectory.jsx';
 import PaymentPanel from './PaymentPanel.jsx';
 import GuardianReviewPanel from './GuardianReviewPanel.jsx';
@@ -107,10 +108,10 @@ export default function App() {
               : <p className="sidebar-empty">No staff workspace for your assigned role. Ask an administrator.</p>}
           </nav>
         </>}
-        <div className="sidebar-foot">Implementation — Part 13<br /><span>User acceptance preparation · Development only</span></div>
+        <div className="sidebar-foot">Implementation — Part 14<br /><span>User acceptance preparation · Development only</span></div>
       </aside>
       <main id="main-content" className="content" tabIndex={-1}>
-        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 13</span></header>
+        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 14</span></header>
         <div className="main-body">
           <p className="eyebrow">MARINGO COUNTY · YOUTH DEVELOPMENT</p>
           <h1>Building a better way to manage sport.</h1>
@@ -156,6 +157,7 @@ export default function App() {
                 <div id="workspace-registration" className="workspace-target"><RegistrationPanel staff={staff} sports={sports} organizations={organizations}
                   onOrganizationAdded={o=>setOrganizations(items=>[...items,o].sort((a,b)=>a.name.localeCompare(b.name)))}
                   onCreated={()=>setRefreshMembers(n=>n+1)}/></div>
+                <div id="workspace-group-intake" className="workspace-target"><GroupBatchPanel staff={staff} sports={sports} organizations={organizations} onCreated={()=>setRefreshMembers(n=>n+1)}/></div>
                 <div id="workspace-directory" className="workspace-target"><MemberDirectory refresh={refreshMembers}/></div>
               </>}
               {staff.roles.some(role=>['ADM','MGT'].includes(role))&&<div id="workspace-guardian" className="workspace-target"><GuardianReviewPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/></div>}

@@ -35,3 +35,7 @@ UAT-33,All staff,Permissions,Attempt unauthorized API or sensitive member detail
 UAT-34,All staff,Reliability,Disconnect network before submitting a write,"No false success, user can safely retry",,,,,
 UAT-35,All staff,Accessibility,"Test narrow device, zoom 200%, keyboard only","Forms usable, navigation available, tables scroll",,,,,
 UAT-36,All staff,Session,Sign out and use browser back button,Protected data not accessible as authenticated session,,,,,
+UAT-37,Registration,Group intake,Paste 2 fictitious adult rows with valid sports and registered school,Exactly two pending KSh 500 charges; one group batch reference,,,,,
+UAT-38,Registration,Group intake,Include one age-ineligible row among two otherwise valid rows,Entire batch fails with no group/member charges posted,,,,,
+UAT-39,Registration,Group intake,Retry exact group body with same Idempotency-Key after uncertain response,No additional members or charges are created,,,,,
+UAT-40,Registration/Management,Group intake,Enter a fictional 17-year-old with a guardian contact,Member remains inactive until separate guardian consent and payment verification,,,,,

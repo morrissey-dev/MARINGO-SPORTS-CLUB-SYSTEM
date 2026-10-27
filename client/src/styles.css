@@ -125,3 +125,11 @@
   .sidebar .sidebar-empty{margin:8px 0}
   .workspace-target{scroll-margin-top:12px}
 }
+
+/* Part 14: group intake review stays usable on small/low-bandwidth screens. */
+.group-preview { border:1px solid var(--line, #cbd5e1);border-radius:12px;padding:1rem;margin-top:1rem; }
+.group-preview .table-scroll { max-width:100%;overflow-x:auto; }
+.group-preview table {width:100%;border-collapse:collapse;}
+.group-preview th,.group-preview td {padding:.55rem;text-align:left;border-bottom:1px solid #d8dee6;}
+.csv-header{display:block;overflow-wrap:anywhere;white-space:normal;padding:.7rem;}
+.confirm-batch {display:flex;align-items:center;gap:.5rem;margin:1rem 0;}
