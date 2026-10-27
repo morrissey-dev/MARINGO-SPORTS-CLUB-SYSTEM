@@ -237,6 +237,39 @@ try {
   assert.ok(report.sources.some(x=>x.source==='membership' && x.netCollected==='2000.00'));
   assert.ok(report.sources.some(x=>x.source==='store_sale' && x.netCollected==='2500.00'));
   passed('income report reconciles two verified membership receipts and one completed store sale');
+  // Part 15: return completed merchandise with an independent physical inspection.
+  // Stock can return; verified cash collection cannot be silently reduced before a real refund.
+  const completedSale=[first,second][[firstCheckout,secondCheckout].findIndex(x=>x.status===201)];
+  const receiptDetails=await call(base,'GET',`/sales/${completedSale.id}`,{cookie});
+  const receiptView=expectStatus(receiptDetails,200,'original sale receipt for return');
+  assert.equal(receiptView.lines.length,1);
+  const requestBody={reason:'Fictional customer returned unused item',lines:[{saleLineId:receiptView.lines[0].saleLineId,quantity:1}]};
+  const returnKey=key();
+  const createdReturn=await call(base,'POST',`/sales/${completedSale.id}/returns`,{
+    cookie,csrf:staff.csrfToken,idempotencyKey:returnKey,body:requestBody});
+  const returned=expectStatus(createdReturn,201,'record physical return request');
+  assert.equal(returned.status,'pending_review');
+  const retryReturn=await call(base,'POST',`/sales/${completedSale.id}/returns`,{
+    cookie,csrf:staff.csrfToken,idempotencyKey:returnKey,body:requestBody});
+  const replayedReturn=expectStatus(retryReturn,200,'return retry');
+  assert.equal(replayedReturn.id,returned.id);
+  const selfApprove=await call(base,'POST',`/sales/returns/${returned.id}/review`,{
+    cookie,csrf:staff.csrfToken,body:{decision:'accept',conditions:[{saleLineId:receiptView.lines[0].saleLineId,condition:'resellable'}]}});
+  expectStatus(selfApprove,409,'requesting officer cannot approve return');
+  const reviewedReturn=await call(base,'POST',`/sales/returns/${returned.id}/review`,{
+    cookie:financeLogin.cookie.split(';')[0],csrf:reviewer.csrfToken,
+    body:{decision:'accept',conditions:[{saleLineId:receiptView.lines[0].saleLineId,condition:'resellable'}]}});
+  const review=expectStatus(reviewedReturn,200,'independent return inspection');
+  assert.equal(review.refundDue,'2500.00');
+  assert.equal(review.refundStatus,'awaiting_separate_payment_processing');
+  const afterReturn=await scopedPool.query('SELECT available_qty FROM store_inventory WHERE item_id=$1',[item.id]);
+  assert.equal(afterReturn.rows[0].available_qty,1);
+  const refundRow=await scopedPool.query('SELECT status,refund_due FROM store_returns WHERE id=$1',[returned.id]);
+  assert.equal(refundRow.rows[0].status,'accepted');
+  const afterIncome=await call(base,'GET','/reports/income',{cookie});
+  const unchangedCash=expectStatus(afterIncome,200,'unrefunded return must not alter recorded cashflow');
+  assert.ok(unchangedCash.sources.some(x=>x.source==='store_sale' && x.netCollected==='2500.00'));
+  passed('sale return idempotency, independent inspection, restock and no fictitious refund');
   console.log(`\nSUCCESS: ${notes.length} live integration checkpoints passed in disposable schema ${schema}.`);
 } catch(error) {
   console.error('INTEGRATION FAILED:',error.message);

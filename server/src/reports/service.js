@@ -69,14 +69,16 @@ export const reportSql = {
   inventory: `WITH movements AS (
     SELECT item_id,
     COALESCE(SUM(quantity_delta) FILTER(WHERE movement_type='receipt'),0)::int AS received_in_period,
-    COALESCE(-SUM(quantity_delta) FILTER(WHERE movement_type='sale'),0)::int AS sold_in_period
+    COALESCE(-SUM(quantity_delta) FILTER(WHERE movement_type='sale'),0)::int AS sold_in_period,
+    COALESCE(SUM(quantity_delta) FILTER(WHERE movement_type='return'),0)::int AS resellable_returns_in_period
     FROM store_stock_movements
     WHERE created_at >= $1::timestamptz AND created_at < $2::timestamptz
     GROUP BY item_id
   ) SELECT i.sku,i.name,i.variant,i.unit_price::text AS unit_price,
     inv.available_qty,i.max_stock_level,(inv.available_qty * 5 <= i.max_stock_level) AS low_stock,
     COALESCE(m.received_in_period,0)::int AS received_in_period,
-    COALESCE(m.sold_in_period,0)::int AS sold_in_period
+    COALESCE(m.sold_in_period,0)::int AS sold_in_period,
+    COALESCE(m.resellable_returns_in_period,0)::int AS resellable_returns_in_period
     FROM store_items i JOIN store_inventory inv ON inv.item_id=i.id
     LEFT JOIN movements m ON m.item_id=i.id ORDER BY i.sku LIMIT 201`,
   events: `WITH fee_totals AS (
@@ -146,6 +148,7 @@ export async function getReport(pool,kind,rawQuery={},now=new Date()) {
       notes:[
         'Net recorded collections: verified payments and completed sales within Nairobi date boundaries, minus dated accounting reversals. This is not a bank statement reconciliation.',
         'Store tenders are counted only once, from completed store sales; membership and event receipts come from the charge-payment ledger.',
+        'Approved merchandise returns are tracked as physical stock and outstanding refund reviews only. Cash refunds are NOT processed in Part 15, so no cash outflow is assumed.',
         'A past verification and a later reversal are separate dated events. A period can show negative net receipts.',
         'Patron commissions are provisional, not booked expenses. No profit or net-after-expenses figure is presented.'
       ]};
@@ -170,7 +173,7 @@ export async function getReport(pool,kind,rawQuery={},now=new Date()) {
   if(kind==='inventory'){
     const all=await run(pool,'inventory',params);
     return {...basic(kind,period),asOf:'current',items:all.slice(0,200),truncated:all.length>200,
-      note:'Available stock and reorder thresholds are current snapshots; received/sold movement totals relate to the selected period. This is separate from loanable equipment.'};
+      note:'Available stock is current. Receipts, sales and approved resellable returns are movements in the period. Accepted returns do NOT indicate cash refunded; refunds await a separate verified payment workflow.'};
   }
   if(kind==='events'){
     const all=await run(pool,'events',params);

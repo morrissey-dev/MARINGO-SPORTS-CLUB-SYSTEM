@@ -2,13 +2,17 @@
 
 A planned web-based system to manage youth registrations, sports and teams, store inventory, purchases, events, equipment issuing and returns, fees, commissions, and reporting for Maringo Sports Club.
 
+## Latest milestone — Part 15
+
+Added store merchandise returns and independent inspections, with exact discount-aware refund **estimates** and auditable stock movements. **Refunds have not been paid or booked**; the return amount is for future finance review, not evidence of a cash outflow. See `docs/implementation-step15.md`. The previous Parts 1–14 remain intact. The on-computer PostgreSQL connection must still be configured separately.
+
 ## Working method
 
 We follow the 1 Million Devs system-design sequence: **requirements → scale estimates → API design → data model → high-level architecture → bottlenecks/trade-offs → incremental implementation**. We also apply AI Safari's decomposition, user-centred design, constraint-aware development, ethical data handling, and verification.
 
 ## Project status
 
-**Implementation Part 14 — Atomic group registration and CSV intake.** Building on Parts 1–13, registration officers can preview and submit groups of 1–20 members from one registered organization. The backend validates all members, creates a linked batch and separate KSh 500 outstanding charges in one transaction, and prevents duplicate retries. The UAT worksheet now includes 40 scenarios. **Local PostgreSQL connection and real staff acceptance still need to be completed**; passing CI is not production certification.
+**Implementation Part 15 — Atomic group registration and CSV intake.** Building on Parts 1–13, registration officers can preview and submit groups of 1–20 members from one registered organization. The backend validates all members, creates a linked batch and separate KSh 500 outstanding charges in one transaction, and prevents duplicate retries. The UAT worksheet now includes 40 scenarios. **Local PostgreSQL connection and real staff acceptance still need to be completed**; passing CI is not production certification.
 
 ## Recommended repository layout
 
@@ -41,7 +45,7 @@ maringo-sports-club/
 - Step 4: `docs/data-model.md` — proposed normalized tables, primary/foreign keys, transactional boundaries, constraints and test cases.
 - Step 5: `docs/architecture.md` — modular monolith, browser/API/DB trust boundaries, business flows, security, backups, and failure handling.
 - Step 6: `docs/tradeoffs.md` — prioritized bottlenecks, architecture alternatives, test thresholds and implementation entry plan.
-- Implementation steps 1–14: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` `docs/implementation-step6.md` and `docs/implementation-step7.md`, `docs/implementation-step8.md`, `docs/implementation-step9.md`, `docs/implementation-step10.md`, and `docs/implementation-step11.md`, `docs/implementation-step12.md`, and `docs/implementation-step13.md` and `docs/implementation-step14.md`.
+- Implementation steps 1–14: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` `docs/implementation-step6.md` and `docs/implementation-step7.md`, `docs/implementation-step8.md`, `docs/implementation-step9.md`, `docs/implementation-step10.md`, and `docs/implementation-step11.md`, `docs/implementation-step12.md`, and `docs/implementation-step13.md` and `docs/implementation-step14.md` and `docs/implementation-step15.md`.
 - Architecture diagrams: `docs/architecture-overview.mmd`, `docs/sale-checkout-sequence.mmd`, and PNG preview.
 - ER diagrams: `docs/erd-overview.mmd`, `docs/erd-members-and-events.mmd`, `docs/erd-store-and-equipment.mmd`.
 

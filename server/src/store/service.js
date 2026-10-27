@@ -206,11 +206,11 @@ export async function getSale(pool,id){
   const sale=await pool.query(`SELECT s.*,t.method,t.reference,t.status AS payment_status
     FROM store_sales s LEFT JOIN store_sale_tenders t ON t.sale_id=s.id WHERE s.id=$1`,[saleId]);
   if(!sale.rowCount)throw fail('SALE_NOT_FOUND','Sale not found.');
-  const lines=await pool.query(`SELECT item_id,sku_snapshot,name_snapshot,qty,unit_price_snapshot,line_total
+  const lines=await pool.query(`SELECT id,item_id,sku_snapshot,name_snapshot,qty,unit_price_snapshot,line_total
     FROM store_sale_lines WHERE sale_id=$1 ORDER BY id`,[saleId]);
   const s=sale.rows[0];
   return {id:saleId,status:s.status,subtotal:s.subtotal,discount:s.discount,total:s.total,
     method:s.method,paymentStatus:s.payment_status,reference:s.reference,
-    lines:lines.rows.map(l=>({itemId:String(l.item_id),sku:l.sku_snapshot,name:l.name_snapshot,
+    lines:lines.rows.map(l=>({saleLineId:String(l.id),itemId:String(l.item_id),sku:l.sku_snapshot,name:l.name_snapshot,
       quantity:l.qty,unitPrice:l.unit_price_snapshot,lineTotal:l.line_total}))};
 }
