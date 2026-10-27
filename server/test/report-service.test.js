@@ -24,13 +24,14 @@ test('income counts store sales once and keeps refunded receipts dated separatel
   ]});
   const result=await getReport(db,'income',period,now);
   assert.equal(result.netCollected,'2500.25');
-  assert.deepEqual(result.sources.map(s=>s.netCollected),['300.00','1200.00','1000.25','0.00']);
+  assert.deepEqual(result.sources.map(s=>s.netCollected),['300.00','1200.00','1000.25','0.00','0.00']);
   assert.equal(result.byMethod.find(x=>x.method==='cash').netCollected,'1000.00');
   assert.equal(result.bookedCommissionExpense,null);
   assert.equal(result.netProfit,null);
   assert.match(db.calls[0].sql,/p\.reversed_at/);
   assert.match(db.calls[0].sql,/s\.status='completed'/);
   assert.match(db.calls[0].sql,/payment_allocations/);
+  assert.match(db.calls[0].sql,/f\.status='paid'/);
   assert.doesNotMatch(db.calls[0].sql,/equipment_incidents/);
 });
 test('membership cohort collected totals are lifetime and distinct from period receipts',async()=>{
@@ -93,4 +94,15 @@ test('report parameter binding matches PostgreSQL SQL placeholders',()=>{
     assert.deepEqual(actual, ['ageBands','membership','events'].includes(name)?full.slice(2):
       ['sports','equipmentBalances'].includes(name)?[]:full.slice(0,2));
   }
+});
+
+test('paid refunds reduce net recorded cashflow; pending refunds are not in cash CTE',async()=>{
+ const db=fake({income:[{source:'store_sale',method:'cash',net_amount:'2500.00'},
+   {source:'store_refund',method:'mobile_money',net_amount:'-800.00'}]});
+ const result=await getReport(db,'income',period,now);
+ assert.equal(result.netCollected,'1700.00');
+ assert.equal(result.sources.find(s=>s.source==='store_refund').netCollected,'-800.00');
+ assert.equal(result.byMethod.find(s=>s.method==='mobile_money').netCollected,'-800.00');
+ assert.match(db.calls[0].sql,/f\.reviewed_at >= \$1::timestamptz/);
+ assert.match(db.calls[0].sql,/f\.status='paid'/);
 });

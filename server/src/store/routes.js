@@ -4,10 +4,11 @@ import { authenticated,requireRole,requireSameOrigin,requireCsrf } from '../auth
 import { InputError } from '../members/validation.js';
 import { listItems,createItem,updateItem,receiveStock,createSale,checkoutSale,verifyMobileSale,cancelDraftSale,listSales,getSale } from './service.js';
 import {createStoreReturn,reviewStoreReturn,listStoreReturns,getStoreReturn} from './returns-service.js';
+import {requestStoreRefund,reviewStoreRefund,listStoreRefunds} from './refunds-service.js';
 
 const statusFor=code=>{
-  if(['ITEM_NOT_FOUND','SALE_NOT_FOUND','INVENTORY_NOT_FOUND','RETURN_NOT_FOUND'].includes(code))return 404;
-  if(['SALE_LOCKED','SALE_NOT_PENDING','INSUFFICIENT_STOCK','IDEMPOTENCY_CONFLICT','STOCK_OVERFLOW','SEPARATION_OF_DUTIES','SALE_NOT_COMPLETED','RETURN_ALREADY_PENDING','RETURN_EXCEEDS_SOLD','RETURN_ALREADY_REVIEWED','IDEMPOTENCY_CONFLICT'].includes(code))return 409;
+  if(['ITEM_NOT_FOUND','SALE_NOT_FOUND','INVENTORY_NOT_FOUND','RETURN_NOT_FOUND','REFUND_NOT_FOUND'].includes(code))return 404;
+  if(['SALE_LOCKED','SALE_NOT_PENDING','INSUFFICIENT_STOCK','IDEMPOTENCY_CONFLICT','STOCK_OVERFLOW','SEPARATION_OF_DUTIES','SALE_NOT_COMPLETED','RETURN_ALREADY_PENDING','RETURN_EXCEEDS_SOLD','RETURN_ALREADY_REVIEWED','REFUND_ALREADY_REQUESTED','REFUND_ALREADY_REVIEWED','REFUND_ENTITLEMENT_CHANGED','RETURN_NOT_ACCEPTED','REFUND_NOT_DUE','IDEMPOTENCY_CONFLICT'].includes(code))return 409;
   return 422;
 };
 const respond=operation=>async(req,res,next)=>{
@@ -51,6 +52,15 @@ export function salesRouter(){
   router.use((_req,res,next)=>{res.setHeader('Cache-Control','no-store');next();},authenticated);
   router.get('/',requireRole('ADM','STO','FIN','MGT'),async(_req,res,next)=>{
     try{res.json({data:await listSales(getPool())});}catch(err){next(err);}
+  });
+  router.get('/refunds',requireRole('ADM','FIN','MGT'),async(_req,res,next)=>{
+    try{res.json({data:await listStoreRefunds(getPool())});}catch(err){next(err);}
+  });
+  router.post('/returns/:id/refunds',requireRole('ADM','FIN','MGT'),...protect,respond(req=>requestStoreRefund(getPool(),{
+    actorId:req.staff.user_id,returnId:req.params.id,body:req.body,key:req.get('Idempotency-Key')})));
+  router.post('/refunds/:id/review',requireRole('ADM','FIN','MGT'),...protect,async(req,res,next)=>{
+    try{res.status(200).json({data:await reviewStoreRefund(getPool(),{
+      actorId:req.staff.user_id,refundId:req.params.id,body:req.body})});}catch(err){next(err);}
   });
   router.get('/returns',requireRole('ADM','STO','FIN','MGT'),async(_req,res,next)=>{
     try{res.json({data:await listStoreReturns(getPool())});}catch(err){next(err);}

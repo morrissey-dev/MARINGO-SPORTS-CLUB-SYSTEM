@@ -18,6 +18,13 @@ const cashFlowCTE = `WITH cash_events AS (
   FROM store_sales s JOIN store_sale_tenders t ON t.sale_id=s.id
   WHERE s.status='completed' AND t.status='verified'
     AND s.completed_at >= $1::timestamptz AND s.completed_at < $2::timestamptz
+  UNION ALL
+  -- Only independently verified, actually disbursed refunds are outflows.
+  -- Physical returns and pending refund requests are NOT negative receipts.
+  SELECT 'store_refund',f.method,-f.amount,f.reviewed_at
+  FROM store_refunds f
+  WHERE f.status='paid'
+    AND f.reviewed_at >= $1::timestamptz AND f.reviewed_at < $2::timestamptz
 )`;
 
 export const reportSql = {
@@ -137,7 +144,7 @@ export async function getReport(pool,kind,rawQuery={},now=new Date()) {
   const params=period.params;
   if (kind==='income' || kind==='overview') {
     const entries = await run(pool,'income',params);
-    const sources = ['membership','facilitation','store_sale','surcharge'].map(source=>({
+    const sources = ['membership','facilitation','store_sale','store_refund','surcharge'].map(source=>({
       source, netCollected:sumMoney(entries.filter(e=>e.source===source).map(e=>e.net_amount))
     }));
     const byMethod=['cash','mobile_money'].map(method=>({
@@ -146,9 +153,9 @@ export async function getReport(pool,kind,rawQuery={},now=new Date()) {
     return {...basic(kind,period),netCollected:sumMoney(sources.map(s=>s.netCollected)),sources,byMethod,
       bookedCommissionExpense:null,netProfit:null,
       notes:[
-        'Net recorded collections: verified payments and completed sales within Nairobi date boundaries, minus dated accounting reversals. This is not a bank statement reconciliation.',
+        'Net recorded cashflow: verified receipts and completed sales, minus dated accounting reversals and independently verified store refunds. This is not bank or till reconciliation.',
         'Store tenders are counted only once, from completed store sales; membership and event receipts come from the charge-payment ledger.',
-        'Approved merchandise returns are tracked as physical stock and outstanding refund reviews only. Cash refunds are NOT processed in Part 15, so no cash outflow is assumed.',
+        'Only independently verified refund disbursements appear as negative store_refund cashflows on the date verified. Pending and rejected refund requests are not cash outflows.',
         'A past verification and a later reversal are separate dated events. A period can show negative net receipts.',
         'Patron commissions are provisional, not booked expenses. No profit or net-after-expenses figure is presented.'
       ]};
@@ -168,12 +175,12 @@ export async function getReport(pool,kind,rawQuery={},now=new Date()) {
   if(kind==='sales'){
     const [summary,products]=await Promise.all([run(pool,'sales',params),run(pool,'saleProducts',params)]);
     return {...basic(kind,period),summary:summary[0],products,
-      note:'Only completed, verified-tender sales count. Product gross sales are before whole-sale discounts; completed sales totals include discounts.'};
+      note:'Completed sales are shown before refunds. To see actual paid refunds and net recorded cashflow for a period, open Club income. Pending refunds are excluded.'};
   }
   if(kind==='inventory'){
     const all=await run(pool,'inventory',params);
     return {...basic(kind,period),asOf:'current',items:all.slice(0,200),truncated:all.length>200,
-      note:'Available stock is current. Receipts, sales and approved resellable returns are movements in the period. Accepted returns do NOT indicate cash refunded; refunds await a separate verified payment workflow.'};
+      note:'Available stock is current. Receipts, sales and approved resellable returns are movements in the period. Accepted returns do NOT indicate cash refunded; only a separately confirmed refund disbursement is a cash outflow.'};
   }
   if(kind==='events'){
     const all=await run(pool,'events',params);

@@ -105,12 +105,13 @@ export async function reviewStoreReturn(pool,{actorId,returnId,body}){
 }
 export async function listStoreReturns(pool){
   const r=await pool.query(`SELECT r.id,r.sale_id,r.status,r.reason,r.refund_due,r.created_at,r.reviewed_at,
-    u.full_name AS received_by,COUNT(l.id)::int AS lines
+    u.full_name AS received_by,COUNT(l.id)::int AS lines,f.id AS refund_id,f.status AS refund_status
     FROM store_returns r JOIN users u ON u.id=r.received_by_user_id
     JOIN store_return_lines l ON l.return_id=r.id
-    GROUP BY r.id,u.full_name ORDER BY r.id DESC LIMIT 80`);
+    LEFT JOIN store_refunds f ON f.return_id=r.id
+    GROUP BY r.id,u.full_name,f.id,f.status ORDER BY r.id DESC LIMIT 80`);
   return r.rows.map(x=>({id:String(x.id),saleId:String(x.sale_id),status:x.status,reason:x.reason,
-    refundDue:x.refund_due,refundStatus:x.status==='accepted'?'awaiting_separate_payment_processing':'not_processed',
+    refundDue:x.refund_due,refundStatus:x.refund_status || (x.status==='accepted'?'not_requested':'not_eligible'),refundId:x.refund_id?String(x.refund_id):null,
     createdAt:x.created_at,reviewedAt:x.reviewed_at,receivedBy:x.received_by,lines:x.lines}));
 }
 export async function getStoreReturn(pool,returnId){

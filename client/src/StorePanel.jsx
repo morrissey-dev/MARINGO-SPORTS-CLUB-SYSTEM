@@ -1,4 +1,5 @@
 import { useCallback,useEffect,useState } from 'react';
+import RefundsPanel from './RefundsPanel.jsx';
 const fmt=v=>`KSh ${Number(v||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
 async function request(path,staff,options={}){
   const response=await fetch(`/api/v1${path}`,{credentials:'same-origin',...options,headers:{
@@ -154,7 +155,7 @@ export default function StorePanel({staff}){
     </tbody></table></div></div>
     <div className="store-section" id="store-returns">
       <h3>Merchandise returns and inspections</h3>
-      <p className="helper">Only completed sales may be returned. Resellable goods restock after independent inspection; damaged goods do not. A recorded refund due is <strong>not a payment</strong>. Actual refund disbursement and financial reversal are not yet implemented.</p>
+      <p className="helper">Only completed sales may be returned. Resellable goods restock after independent inspection; damaged goods do not. A recorded refund due is <strong>not a payment</strong>. Finance can separately request and verify actual repayments below.</p>
       {canSell&&<form onSubmit={e=>{e.preventDefault();act(async()=>{
         if(!returnSaleId||!returnLineId)throw new Error('Select a completed sale and a product.');
         const requestKey=returnKey||crypto.randomUUID();setReturnKey(requestKey);
@@ -177,8 +178,8 @@ export default function StorePanel({staff}){
         <button disabled={busy||!returnSale||!returnLineId} type="submit">Submit return for inspection</button>
       </form>}
       <h4>Recent returns</h4>
-      <div className="table-scroll"><table><thead><tr><th>Return</th><th>Sale</th><th>Status</th><th>Provisional refund estimate (unpaid)</th><th>Review</th></tr></thead><tbody>
-        {returns.map(r=><tr key={r.id}><td>#{r.id}</td><td>#{r.saleId}</td><td>{r.status}</td><td>{fmt(r.refundDue)}</td><td>{canReview&&r.status==='pending_review'?<button type="button" disabled={busy} onClick={()=>startReview(r.id)}>Inspect</button>:'—'}</td></tr>)}
+      <div className="table-scroll"><table><thead><tr><th>Return</th><th>Sale</th><th>Status</th><th>Refund entitlement</th><th>Refund status</th><th>Review</th></tr></thead><tbody>
+        {returns.map(r=><tr key={r.id}><td>#{r.id}</td><td>#{r.saleId}</td><td>{r.status}</td><td>{fmt(r.refundDue)}</td><td>{r.refundStatus||'not_requested'}</td><td>{canReview&&r.status==='pending_review'?<button type="button" disabled={busy} onClick={()=>startReview(r.id)}>Inspect</button>:'—'}</td></tr>)}
       </tbody></table></div>
       {canReview&&returnReview&&returnReview.status==='pending_review'&&<form onSubmit={e=>{e.preventDefault();act(async()=>{
         const conditions=returnReview.lines.map(l=>({saleLineId:l.saleLineId,condition:returnConditions[l.saleLineId]}));
@@ -201,9 +202,10 @@ export default function StorePanel({staff}){
         <button type="button" disabled={busy} onClick={()=>{setReturnReview(null);setReturnConditions({});}}>Close review</button>
       </form>}
     </div>
+    {canReview&&<RefundsPanel staff={staff} returns={returns} onChanged={refresh}/> }
     <div className="store-section"><h3>Recent stock movements</h3><div className="table-scroll"><table><thead><tr><th>Item SKU</th><th>Movement</th><th>Quantity</th><th>Source</th></tr></thead><tbody>
       {movements.slice(0,20).map(m=><tr key={m.id}><td>{m.sku}</td><td>{m.type}</td><td>{m.delta>0?'+':''}{m.delta}</td><td>{m.returnId?`Return ${m.returnId}`:m.receiptId?`Receipt ${m.receiptId}`:`Sale ${m.saleId}`}</td></tr>)}
     </tbody></table></div></div>
-    <p className="helper">Merchandise returns require inspection and authorization. Cash/mobile-money refunds are not yet paid or automatically recorded; do not use stock receipts or new sales to conceal a return.</p>
+    <p className="helper">Merchandise returns require inspection and authorization. Refunds are recorded separately from return inspection and stock adjustments. A refund only reduces recorded cashflow after independent verification of payment evidence.</p>
   </section>;
 }

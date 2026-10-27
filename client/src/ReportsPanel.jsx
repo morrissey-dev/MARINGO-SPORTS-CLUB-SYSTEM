@@ -2,7 +2,7 @@ import {encodeCsv} from './reportExport.js';
 import {useEffect,useState} from 'react';
 
 const ALL_TABS=[
-  {id:'overview',label:'Club income',roles:['ADM','FIN','MGT']},
+  {id:'overview',label:'Club cashflow',roles:['ADM','FIN','MGT']},
   {id:'memberships',label:'Memberships',roles:['ADM','REG','FIN','MGT']},
   {id:'sports',label:'Sports',roles:['ADM','FIN','MGT']},
   {id:'sales',label:'Store sales',roles:['ADM','STO','FIN','MGT']},
@@ -79,7 +79,7 @@ export default function ReportsPanel({staff}){
       {(tab==='overview'||tab==='income')&&<><div className="report-figures"><Figure name="Net recorded collections" value={money(report.netCollected)}/><Figure name="Commission expense / profit" value="Not booked"/></div><h3>Collections by source</h3><Table rows={report.sources}/><h3>Collections by payment method</h3><Table rows={report.byMethod}/>{report.notes.map(n=><p className="helper" key={n}>{n}</p>)}</>}
       {tab==='memberships'&&<><h3>Membership registrations</h3><Table rows={report.categories}/><h3>Age at registration</h3><Table rows={report.ageBands}/><p className="helper">{report.note}</p></>}
       {tab==='sports'&&<><h3>Sports and current roles</h3><Table rows={report.sports}/><p className="helper">{report.note}</p></>}
-      {tab==='sales'&&<><div className="report-figures"><Figure name="Verified completed sales" value={report.summary.completed_sales}/><Figure name="Net completed sales" value={money(report.summary.total)}/><Figure name="Discounts given" value={money(report.summary.discount)}/></div><h3>Products sold (gross, before discounts)</h3><Table rows={report.products}/><p className="helper">{report.note}</p></>}
+      {tab==='sales'&&<><div className="report-figures"><Figure name="Verified completed sales" value={report.summary.completed_sales}/><Figure name="Completed sales before refunds" value={money(report.summary.total)}/><Figure name="Discounts given" value={money(report.summary.discount)}/></div><h3>Products sold (gross, before discounts)</h3><Table rows={report.products}/><p className="helper">{report.note}</p></>}
       {tab==='inventory'&&<><h3>Current stock and period movements</h3><Table rows={report.items}/><p className="helper">{report.note}</p></>}
       {tab==='events'&&<><h3>Events, fees and provisional commission</h3><Table rows={report.events}/><p className="helper">{report.note}</p></>}
       {tab==='equipment'&&<><div className="report-figures"><Figure name="Equipment loans issued" value={report.loans.issued_in_period}/><Figure name="Currently overdue" value={report.loans.overdue_now}/><Figure name="Approved assessments in period (not collected)" value={money(report.incidents.assessed_surcharge_in_period)}/></div><h3>Current equipment balances</h3><Table rows={report.balances}/><p className="helper">{report.note}</p></>}

@@ -270,6 +270,42 @@ try {
   const unchangedCash=expectStatus(afterIncome,200,'unrefunded return must not alter recorded cashflow');
   assert.ok(unchangedCash.sources.some(x=>x.source==='store_sale' && x.netCollected==='2500.00'));
   passed('sale return idempotency, independent inspection, restock and no fictitious refund');
+  // Part 16: requesting repayment is not a financial outflow; independent review
+  // records disbursement evidence and reduces period cashflow exactly once.
+  const refundKey=key();
+  const refundRequest=await call(base,'POST',`/sales/returns/${returned.id}/refunds`,{
+    cookie,csrf:staff.csrfToken,idempotencyKey:refundKey,
+    body:{method:'cash',reason:'Authorized payout for inspected return'}});
+  const refund=expectStatus(refundRequest,201,'create pending store refund');
+  assert.equal(refund.status,'pending');
+  assert.equal(refund.amount,'2500.00');
+  const refundAgain=await call(base,'POST',`/sales/returns/${returned.id}/refunds`,{
+    cookie,csrf:staff.csrfToken,idempotencyKey:refundKey,
+    body:{method:'cash',reason:'Authorized payout for inspected return'}});
+  assert.equal(expectStatus(refundAgain,200,'refund request retry').id,refund.id);
+  const beforeRefund=expectStatus(await call(base,'GET','/reports/income',{cookie}),200,'pending refund report');
+  assert.equal(beforeRefund.sources.find(x=>x.source==='store_refund').netCollected,'0.00');
+  const selfRefund=await call(base,'POST',`/sales/refunds/${refund.id}/review`,{
+    cookie,csrf:staff.csrfToken,
+    body:{decision:'pay',evidenceReference:'CASH-REFUND-001',evidenceNote:'Approved cash voucher verified against signed record'}});
+  expectStatus(selfRefund,409,'refund requester cannot verify own payout');
+  const paidRefund=await call(base,'POST',`/sales/refunds/${refund.id}/review`,{
+    cookie:financeLogin.cookie.split(';')[0],csrf:reviewer.csrfToken,
+    body:{decision:'pay',evidenceReference:'CASH-REFUND-001',evidenceNote:'Approved cash voucher verified against signed record'}});
+  const paid=expectStatus(paidRefund,200,'independent refund payment confirmation');
+  assert.equal(paid.status,'paid');
+  const secondPayout=await call(base,'POST',`/sales/refunds/${refund.id}/review`,{
+    cookie:financeLogin.cookie.split(';')[0],csrf:reviewer.csrfToken,
+    body:{decision:'pay',evidenceReference:'CASH-REFUND-001',evidenceNote:'Approved cash voucher verified against signed record'}});
+  expectStatus(secondPayout,409,'refund cannot be paid twice');
+  const afterPaid=expectStatus(await call(base,'GET','/reports/income',{cookie}),200,'income including verified refund');
+  assert.equal(afterPaid.sources.find(x=>x.source==='store_sale').netCollected,'2500.00');
+  assert.equal(afterPaid.sources.find(x=>x.source==='store_refund').netCollected,'-2500.00');
+  assert.equal(afterPaid.netCollected,'2000.00');
+  const stockAfterRefund=await scopedPool.query('SELECT available_qty FROM store_inventory WHERE item_id=$1',[item.id]);
+  assert.equal(stockAfterRefund.rows[0].available_qty,1);
+  passed('pending refund excluded; independent verified disbursement offsets sale cashflow once without restocking again');
+
   console.log(`\nSUCCESS: ${notes.length} live integration checkpoints passed in disposable schema ${schema}.`);
 } catch(error) {
   console.error('INTEGRATION FAILED:',error.message);
