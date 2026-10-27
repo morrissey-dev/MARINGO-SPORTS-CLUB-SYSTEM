@@ -1,3 +1,4 @@
+import ReportsPanel from './ReportsPanel.jsx';
 import EquipmentPanel from './EquipmentPanel.jsx';
 import StorePanel from './StorePanel.jsx';
 import EventsPanel from './EventsPanel.jsx';
@@ -14,7 +15,7 @@ const plannedModules = [
   { title: 'Store and sales', description: 'Products, receipts, stock alerts', icon: '03', phase: 'Part 7 operational' },
   { title: 'Events and fees', description: 'Fixtures, roster finalization and facilitation fee tracking', icon: '04', phase: 'Part 6 operational' },
   { title: 'Equipment', description: 'Loan requests, captain issue, returns, incidents', icon: '05', phase: 'Part 8 operational' },
-  { title: 'Reports', description: 'Revenue, participation, inventory', icon: '06', phase: 'Planned' },
+  { title: 'Reports', description: 'Revenue, participation, inventory', icon: '06', phase: 'Part 9 operational' },
 ];
 
 export default function App() {
@@ -95,10 +96,10 @@ export default function App() {
         <div className="nav-item muted">◎ Sports & teams</div>
         <div className="nav-item muted">◎ Store & inventory</div>
         <div className="nav-item muted">◎ Events & finances</div>
-        <div className="sidebar-foot">Implementation — Part 8<br /><span>Equipment loans and inspections</span></div>
+        <div className="sidebar-foot">Implementation — Part 9<br /><span>Financial reports and reconciliation</span></div>
       </aside>
       <main className="content">
-        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 8</span></header>
+        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 9</span></header>
         <div className="main-body">
           <p className="eyebrow">MARINGO COUNTY · YOUTH DEVELOPMENT</p>
           <h1>Building a better way to manage sport.</h1>
@@ -130,7 +131,7 @@ export default function App() {
                 <button onClick={signOut} disabled={busy}>{busy?'Signing out…':'Sign out'}</button>
               </section>
               {error && <p role="alert" className="auth-error">{error}</p>}
-              <div className="section-heading"><div><h2>Development modules</h2><p>Registration, payments, sports, events, store transactions and equipment lending are implemented. Full reporting remains planned.</p></div><span className="count">6 modules</span></div>
+              <div className="section-heading"><div><h2>Development modules</h2><p>Registration, payments, sports, events, store transactions and equipment lending are implemented. Aggregate financial and operational reports are now available.</p></div><span className="count">6 modules</span></div>
               <div className="cards">
                 {plannedModules.map(item=>(
                   <article className="module" key={item.title}>
@@ -152,7 +153,8 @@ export default function App() {
               {staff.roles.some(role=>['ADM','MGT','PAT','FIN'].includes(role))&&<EventsPanel staff={staff}/>}
               {staff.roles.some(role=>['ADM','STO','FIN','MGT'].includes(role))&&<StorePanel staff={staff}/>}
               {staff.roles.some(role=>['ADM','MGT','STO','FIN','PAT'].includes(role))&&<EquipmentPanel staff={staff}/>}
-              <div className="note"><strong>Pending functionality</strong><p>Events, member fees and store transactions are available. Patron commissions are illustrative pending club policy approval. Refund processing, liability allocation and comprehensive reports remain future milestones.</p></div>
+              {staff.roles.some(role=>['ADM','MGT','FIN','REG','STO'].includes(role))&&<ReportsPanel staff={staff}/>}
+              <div className="note"><strong>Pending functionality</strong><p>Events, member fees and store transactions are available. Patron commissions are illustrative pending club policy approval. Refund processing, binding commission payouts, individual liability allocation, and full-period financial expense reporting remain future milestones. Reporting is preliminary until PostgreSQL integration is verified.</p></div>
             </>
           )}
           <footer>MSCMS · Guided by AI Safari and 1 Million Devs</footer>

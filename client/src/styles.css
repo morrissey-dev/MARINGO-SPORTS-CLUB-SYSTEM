@@ -90,3 +90,17 @@
 .store-panel button{font:inherit;font-weight:700;font-size:13px;border:1px solid #19504b;background:#19504b;color:white;padding:9px 13px;border-radius:8px;cursor:pointer}
 .store-panel button:disabled{opacity:.55;cursor:not-allowed}.store-alert{color:#973414;background:#fff0e3;border:1px solid #fad6bf;border-radius:6px;padding:4px 6px;font-weight:700}
 @media(max-width:700px){.store-panel{padding:16px}.store-fields{grid-template-columns:1fr}}
+/* Part 9: simple, low-bandwidth staff reporting controls and tables. */
+.reports-panel .report-tabs{display:flex;flex-wrap:wrap;gap:.55rem;margin:.8rem 0 1rem}
+.reports-panel .report-tabs button{width:auto;min-width:unset;background:#eef3f7;color:#213c4c;border:1px solid #ccd8e2}
+.reports-panel .report-tabs button.active{background:#175a66;color:#fff}
+.reports-panel .report-controls{display:flex;align-items:end;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem}
+.reports-panel .report-controls label{display:flex;flex-direction:column;gap:.3rem}
+.reports-panel .report-controls input{max-width:180px}
+.reports-panel .report-controls button{width:auto}
+.reports-panel .report-figures{display:flex;flex-wrap:wrap;gap:.8rem;margin:.9rem 0}
+.reports-panel .report-figure{border:1px solid #ccd8e2;border-radius:10px;padding:.85rem;flex:1;min-width:165px;display:flex;flex-direction:column;gap:.4rem}
+.reports-panel .report-figure small{color:#49616f}
+.reports-panel .report-figure strong{font-size:1.2rem;overflow-wrap:anywhere}
+.reports-panel .report-table-scroll{max-width:100%;overflow:auto;margin:.6rem 0 1rem}
+.reports-panel .report-table-scroll table{min-width:640px}
