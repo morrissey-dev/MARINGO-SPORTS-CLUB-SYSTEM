@@ -70,9 +70,9 @@ export function salesRouter(){
   router.post('/:id/checkout',requireRole('ADM','STO'),...protect,respond(req=>checkoutSale(getPool(),{
     actorId:req.staff.user_id,saleId:req.params.id,body:req.body,key:req.get('Idempotency-Key')})));
   router.post('/:id/verify-mobile',requireRole('ADM','FIN','MGT'),...protect,respond(req=>verifyMobileSale(getPool(),{
-    actorId:req.staff.user_id,saleId:req.params.id,body:req.body,key:req.get('Idempotency-Key')})));
-  router.post('/:id/returns',requireRole('ADM','STO'),...protect,respond(req=>createStoreReturn(getPool(),{
     actorId:req.staff.user_id,saleId:req.params.id,body:req.body})));
+  router.post('/:id/returns',requireRole('ADM','STO'),...protect,respond(req=>createStoreReturn(getPool(),{
+    actorId:req.staff.user_id,saleId:req.params.id,body:req.body,key:req.get('Idempotency-Key')})));
   router.post('/:id/cancel',requireRole('ADM','STO'),...protect,respond(req=>cancelDraftSale(getPool(),{
     actorId:req.staff.user_id,saleId:req.params.id})));
   router.use((err,_req,res,next)=>{
