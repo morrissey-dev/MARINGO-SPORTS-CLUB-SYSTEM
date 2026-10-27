@@ -15,6 +15,13 @@ import {reportsRouter} from './reports/routes.js';
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
+  // API responses can include financial and minor-related information: never cache them.
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    next();
+  });
   app.use(express.json({ limit: '100kb' }));
   app.use('/api/v1/auth', (_req, res, next) => { res.setHeader('Cache-Control','no-store'); next(); }, authRouter());
   app.use('/api/v1/sports', sportsRouter());
@@ -46,6 +53,11 @@ export function createApp() {
     if (error?.status === 400 && error?.type === 'entity.parse.failed') {
       return response.status(400).json({
         error: { code: 'INVALID_JSON', message: 'Request body must contain valid JSON.' },
+      });
+    }
+    if (error?.status === 413 || error?.type === 'entity.too.large') {
+      return response.status(413).json({
+        error: { code: 'PAYLOAD_TOO_LARGE', message: 'Request exceeds the 100 KB limit.' },
       });
     }
     console.error('Unhandled request error:', error?.code || error?.name || 'unknown');

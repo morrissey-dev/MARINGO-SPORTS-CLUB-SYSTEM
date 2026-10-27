@@ -194,7 +194,7 @@ export async function cancelDraftSale(pool,{actorId,saleId}){
 }
 export async function listSales(pool){
   const r=await pool.query(`SELECT s.id,s.status,s.subtotal,s.discount,s.total,s.created_at,s.completed_at,
-    t.method,t.reference,t.status AS payment_status FROM store_sales s
+    t.method,t.reference,t.status AS payment_status,m.membership_number AS buyer_member_number FROM store_sales s
     LEFT JOIN store_sale_tenders t ON t.sale_id=s.id
     LEFT JOIN members m ON m.id=s.buyer_member_id ORDER BY s.id DESC LIMIT 80`);
   return r.rows.map(x=>({id:String(x.id),status:x.status,subtotal:x.subtotal,discount:x.discount,

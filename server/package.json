@@ -13,7 +13,8 @@
     "db:check": "node scripts/check-db.js",
     "db:migrate": "node scripts/migrate.js",
     "staff:create": "node scripts/create-admin.js",
-    "staff:create-role": "node scripts/create-staff.js"
+    "staff:create-role": "node scripts/create-staff.js",
+    "test:integration": "node scripts/integration-check.js"
   },
   "dependencies": {
     "dotenv": "^17.0.0",

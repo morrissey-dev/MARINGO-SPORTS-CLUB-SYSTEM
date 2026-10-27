@@ -8,7 +8,7 @@ We follow the 1 Million Devs system-design sequence: **requirements → scale es
 
 ## Project status
 
-**Implementation Part 9 — Reports and reconciliation.** All Part 1–8 files retained. Adds `/api/v1/reports` read-only routes, Kenya-date filters, membership/sports/sales/inventory/events/equipment summaries, cashflow ledger with reversal dates, CSV export and migration `009_reports_indexes.sql`. Full PostgreSQL integration and production React build remain to be verified locally. Historical fees and provisional commissions are not treated as collected income.
+**Implementation Part 10 — Integration test preparation and API hardening.** All Part 1–9 files retained. Added a strictly isolated PostgreSQL + real HTTP integration smoke test (`npm run test:integration`), unit regression checks, API no-store/security response headers and reliable 413 payload-limit handling. Fixed the omitted buyer membership number in the sales list. **The live PostgreSQL integration test and Vite build remain unexecuted here because npm dependencies and PostgreSQL are not available**; see `docs/implementation-step10.md`. Historical fees and provisional commissions are not counted as collected income.
 
 ## Recommended repository layout
 
@@ -41,7 +41,7 @@ maringo-sports-club/
 - Step 4: `docs/data-model.md` — proposed normalized tables, primary/foreign keys, transactional boundaries, constraints and test cases.
 - Step 5: `docs/architecture.md` — modular monolith, browser/API/DB trust boundaries, business flows, security, backups, and failure handling.
 - Step 6: `docs/tradeoffs.md` — prioritized bottlenecks, architecture alternatives, test thresholds and implementation entry plan.
-- Implementation steps 1–9: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` `docs/implementation-step6.md` and `docs/implementation-step7.md`, `docs/implementation-step8.md` and `docs/implementation-step9.md`.
+- Implementation steps 1–10: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` `docs/implementation-step6.md` and `docs/implementation-step7.md`, `docs/implementation-step8.md`, `docs/implementation-step9.md`, and `docs/implementation-step10.md`.
 - Architecture diagrams: `docs/architecture-overview.mmd`, `docs/sale-checkout-sequence.mmd`, and PNG preview.
 - ER diagrams: `docs/erd-overview.mmd`, `docs/erd-members-and-events.mmd`, `docs/erd-store-and-equipment.mmd`.
 
@@ -49,13 +49,13 @@ maringo-sports-club/
 
 ## How to run
 
-Read **`docs/implementation-step9.md`** for current instructions. In brief: install Node.js 22.12+ and PostgreSQL, run `npm install`, configure private `server/.env`, run `npm run db:check` and `npm run db:migrate`, and create an administrator using `npm run staff:create` when setting up for the first time. Start `npm run dev:server` and `npm run dev:client` in separate terminals. Run `npm test` and `npm run build`.
+Read **`docs/implementation-step10.md`** for current instructions and the dedicated integration database procedure. In brief: install Node.js 22.12+ and PostgreSQL, run `npm install`, configure private `server/.env`, run `npm run db:check` and `npm run db:migrate`, and create an administrator using `npm run staff:create` when setting up for the first time. Start `npm run dev:server` and `npm run dev:client` in separate terminals. Run `npm test` and `npm run build`.
 
 Do not commit real member records, guardians' contacts, secrets or `.env` files. Use dummy data for demos.
 
 ## Next milestone
 
-Part 10 — PostgreSQL-backed integration, security and full frontend build validation. Equipment surcharge allocation and patron commission payouts remain blocked until management approves the respective policies.
+**Run and fix live integration on an isolated test PostgreSQL database, then run the full frontend build and carry out user-acceptance testing.** Next code milestone: broader integration coverage, deployment readiness and accessibility improvements. Equipment surcharge allocation and patron commission payouts remain blocked until management approves the respective policies.
 
 ## Rule for source changes
 

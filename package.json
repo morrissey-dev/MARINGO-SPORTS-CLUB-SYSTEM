@@ -18,6 +18,7 @@
     "build": "npm run build --workspace client",
     "db:migrate": "npm run db:migrate --workspace server",
     "staff:create": "npm run staff:create --workspace server",
-    "staff:create-role": "npm run staff:create-role --workspace server"
+    "staff:create-role": "npm run staff:create-role --workspace server",
+    "test:integration": "npm run test:integration --workspace server"
   }
 }
