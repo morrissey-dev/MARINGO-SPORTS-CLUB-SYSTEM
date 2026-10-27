@@ -1,0 +1,23 @@
+{
+  "name": "maringo-sports-club",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev:client": "npm run dev --workspace client",
+    "dev:server": "npm run dev --workspace server",
+    "test": "npm run test --workspace server",
+    "db:check": "npm run db:check --workspace server",
+    "build": "npm run build --workspace client",
+    "db:migrate": "npm run db:migrate --workspace server",
+    "staff:create": "npm run staff:create --workspace server",
+    "staff:create-role": "npm run staff:create-role --workspace server"
+  }
+}

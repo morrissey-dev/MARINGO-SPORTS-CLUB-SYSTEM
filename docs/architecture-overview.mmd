@@ -1,0 +1,15 @@
+flowchart TD
+  U["Club staff roles"] --> B["React responsive browser interface"]
+  B -->|"HTTPS /api/v1"| P["Same-origin TLS web entry"]
+  P --> A["Express API: session, CSRF, validation, RBAC"]
+  A --> M["Membership and registration"]
+  A --> E["Sports, teams and events"]
+  A --> S["Store, sales, equipment"]
+  A --> F["Payments, commissions, reports"]
+  M --> DB[("PostgreSQL")]
+  E --> DB
+  S --> DB
+  F --> DB
+  DB -. "encrypted scheduled backup" .-> BK[("Protected backup location")]
+  A -. "sanitized events" .-> LG["Restricted logs"]
+  F --> R["Restricted CSV/PDF exports"]

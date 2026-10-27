@@ -1,0 +1,20 @@
+sequenceDiagram
+  actor Clerk as Store Clerk
+  participant UI as React Frontend
+  participant API as Express /api/v1
+  participant DB as PostgreSQL
+  Clerk->>UI: Finalize paid sale
+  UI->>API: POST /sales/{id}/checkout + Idempotency-Key
+  API->>API: Verify session, role, tender, amounts
+  API->>DB: BEGIN; lock affected inventory rows
+  DB-->>API: Locked available quantities
+  alt Paid and all items in stock
+    API->>DB: Insert verified receipt/payment and stock movements
+    API->>DB: Decrease stock; finalize sale and idempotency result; COMMIT
+    DB-->>API: Committed sale and receipt
+    API-->>UI: 200 Paid; receipt + low-stock status
+  else Stock unavailable or tender not verified
+    API->>DB: ROLLBACK
+    API-->>UI: Conflict / pending verification
+  end
+  UI-->>Clerk: Show confirmed result or clear error

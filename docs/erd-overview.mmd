@@ -1,0 +1,108 @@
+erDiagram
+    USERS ||--o{ USER_ROLES : assigned
+    ROLES ||--o{ USER_ROLES : grants
+    ORGANIZATIONS ||--o{ MEMBERSHIPS : enrolls
+    MEMBERS ||--o{ MEMBERSHIPS : has
+    MEMBERS ||--o{ MEMBER_SPORT_PREFERENCES : ranks
+    SPORTS ||--o{ MEMBER_SPORT_PREFERENCES : preferred
+    SPORTS ||--o{ TEAMS : supports
+    MEMBERS ||--o{ TEAM_MEMBERS : joins
+    TEAMS ||--o{ TEAM_MEMBERS : includes
+    TEAM_MEMBERS ||--o{ CAPTAIN_ASSIGNMENTS : elected
+    SPORTS ||--o{ PATRON_ASSIGNMENTS : served_by
+    USERS ||--o{ PATRON_ASSIGNMENTS : appointed
+    SPORTS ||--o{ EVENTS : holds
+    EVENTS ||--o{ EVENT_PARTICIPANTS : registers
+    MEMBERS ||--o{ EVENT_PARTICIPANTS : attends
+    MEMBERS ||--o{ CHARGES : billed
+    MEMBERSHIPS ||--o| MEMBERSHIP_CHARGES : origin
+    EVENT_PARTICIPANTS ||--o| FACILITATION_CHARGES : origin
+    CHARGES ||--o{ PAYMENT_ALLOCATIONS : paid_by
+    PAYMENTS ||--o{ PAYMENT_ALLOCATIONS : allocates
+    MEMBERS ||--o{ SALES : purchases
+    SALES ||--o{ SALE_ITEMS : has
+    STORE_ITEMS ||--o{ SALE_ITEMS : sold_as
+    STORE_ITEMS ||--|| INVENTORY_BALANCES : inventory
+    STORE_ITEMS ||--o{ STOCK_MOVEMENTS : records
+    EVENTS ||--o{ EQUIPMENT_LOANS : needs
+    EQUIPMENT_LOANS ||--o{ EQUIPMENT_LOAN_ITEMS : includes
+    STORE_ITEMS ||--o{ EQUIPMENT_LOAN_ITEMS : issued_as
+    EQUIPMENT_LOAN_ITEMS ||--o{ EQUIPMENT_RETURNS : returned
+    EQUIPMENT_LOAN_ITEMS ||--o{ EQUIPMENT_INCIDENTS : incidents
+    EQUIPMENT_INCIDENTS ||--o{ SURCHARGE_ALLOCATIONS : apportioned
+    EVENTS ||--o| PATRON_COMMISSIONS : accrues
+    PATRON_COMMISSIONS ||--o{ COMMISSION_PAYOUTS : paid
+
+    MEMBERS {
+      uuid id PK
+      string membership_number UK
+      string full_name
+      date date_of_birth
+    }
+    MEMBERSHIPS {
+      uuid id PK
+      uuid member_id FK
+      uuid organization_id FK
+      string registration_type
+    }
+    ORGANIZATIONS {
+      uuid id PK
+      string name
+      string type
+    }
+    SPORTS {
+      uuid id PK
+      string name UK
+    }
+    MEMBER_SPORT_PREFERENCES {
+      uuid member_id PK,FK
+      uuid sport_id PK,FK
+      int priority
+    }
+    TEAMS {
+      uuid id PK
+      uuid sport_id FK
+    }
+    EVENTS {
+      uuid id PK
+      uuid team_id FK
+      date event_date
+      string event_type
+    }
+    CHARGES {
+      uuid id PK
+      uuid member_id FK
+      decimal amount
+      string charge_type
+    }
+    PAYMENTS {
+      uuid id PK
+      decimal amount
+      string payment_type
+      string status
+    }
+    SALES {
+      uuid id PK
+      uuid member_id FK
+      decimal total_amount
+    }
+    STORE_ITEMS {
+      uuid id PK
+      string sku UK
+      decimal unit_price
+    }
+    INVENTORY_BALANCES {
+      uuid store_item_id PK,FK
+      int available_qty
+      int issued_qty
+      int damaged_qty
+    }
+    EQUIPMENT_LOANS {
+      uuid id PK
+      uuid event_id FK
+    }
+    EQUIPMENT_INCIDENTS {
+      uuid id PK
+      uuid equipment_loan_item_id FK
+      decimal total_surcharge_amount
+    }
