@@ -77,3 +77,16 @@
 .event-warning{padding:14px;background:#fff6e6;border:1px solid #efdab0;border-radius:9px;font-size:13px}
 .event-warning p{line-height:1.5;margin:8px 0 0}
 @media(max-width:700px){.events-panel{padding:16px}.event-fields{grid-template-columns:1fr}}
+/* Part 7: staff-only inventory and checkout. */
+.store-panel{margin-top:28px;padding:24px;background:white;border:1px solid #dce6e8;border-radius:16px}
+.store-panel h2{margin:0 0 8px}.store-panel h3{margin:0 0 13px;font-size:17px}
+.store-section{margin:19px 0;padding:19px;background:#f9fbfb;border:1px solid #dce6e8;border-radius:12px}
+.store-panel table{width:100%;border-collapse:collapse;font-size:13px;min-width:650px}
+.store-panel td,.store-panel th{text-align:left;padding:10px;border-bottom:1px solid #dfebed;vertical-align:middle}
+.store-panel th{background:#e9f2f2}.store-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.store-fields label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:650}
+.store-panel input,.store-panel select{font:inherit;font-size:13px;border:1px solid #91a6ae;border-radius:8px;min-width:0;min-height:40px;padding:9px;background:white;width:100%}
+.store-panel input:focus-visible,.store-panel select:focus-visible{outline:3px solid #73c2b2;outline-offset:1px}
+.store-panel button{font:inherit;font-weight:700;font-size:13px;border:1px solid #19504b;background:#19504b;color:white;padding:9px 13px;border-radius:8px;cursor:pointer}
+.store-panel button:disabled{opacity:.55;cursor:not-allowed}.store-alert{color:#973414;background:#fff0e3;border:1px solid #fad6bf;border-radius:6px;padding:4px 6px;font-weight:700}
+@media(max-width:700px){.store-panel{padding:16px}.store-fields{grid-template-columns:1fr}}

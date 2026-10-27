@@ -7,6 +7,7 @@ import { organizationsRouter } from './organizations/routes.js';
 import { paymentsRouter } from './payments/routes.js';
 import { teamsRouter } from './teams/routes.js';
 import { eventsRouter } from './events/routes.js';
+import { storeRouter,salesRouter } from './store/routes.js';
 
 // Keep app creation separate from app.listen so tests can import it later.
 export function createApp() {
@@ -20,6 +21,8 @@ export function createApp() {
   app.use('/api/v1/payments', paymentsRouter());
   app.use('/api/v1/teams', teamsRouter());
   app.use('/api/v1/events', eventsRouter());
+  app.use('/api/v1/store',storeRouter());
+  app.use('/api/v1/sales',salesRouter());
 
   app.get('/api/v1/health', (_request, response) => {
     response.status(200).json(healthResponse());
