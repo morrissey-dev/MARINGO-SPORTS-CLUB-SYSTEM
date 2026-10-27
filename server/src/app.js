@@ -1,5 +1,7 @@
 import express from 'express';
 import { healthResponse } from './health.js';
+import { readinessResult } from './readiness.js';
+import { getPool } from './db/pool.js';
 import { authRouter } from './auth/routes.js';
 import { sportsRouter } from './sports/routes.js';
 import { membersRouter } from './members/routes.js';
@@ -20,6 +22,11 @@ export function createApp() {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    if (process.env.NODE_ENV === 'production') {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+    }
     next();
   });
   app.use(express.json({ limit: '100kb' }));
@@ -36,7 +43,13 @@ export function createApp() {
   app.use('/api/v1/reports',reportsRouter());
 
   app.get('/api/v1/health', (_request, response) => {
+    // Liveness only: do not use this endpoint as a claim of DB availability.
     response.status(200).json(healthResponse());
+  });
+
+  app.get('/api/v1/ready', async (_request, response) => {
+    const result = await readinessResult(() => getPool().query({text:'SELECT 1', query_timeout:3000}));
+    response.status(result.statusCode).json(result.body);
   });
 
   app.use('/api', (_request, response) => {

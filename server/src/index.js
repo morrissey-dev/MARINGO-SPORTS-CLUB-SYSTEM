@@ -1,19 +1,42 @@
 import 'dotenv/config';
 import { createApp } from './app.js';
+import { validateRuntimeEnvironment } from './config/runtime.js';
+import { closePool } from './db/pool.js';
 
-if (!process.env.CSRF_SECRET || process.env.CSRF_SECRET.length < 48 || !process.env.APP_ORIGIN) {
-  console.error('Set a random CSRF_SECRET (48+ characters) and APP_ORIGIN in server/.env before starting.');
-  process.exit(1);
-}
-
-const port = Number(process.env.PORT || 4000);
-if (!Number.isInteger(port) || port < 1 || port > 65535) {
-  console.error('PORT must be a valid TCP port.');
+const config = validateRuntimeEnvironment(process.env);
+if (!config.valid) {
+  for (const message of config.errors) console.error('Configuration error:', message);
   process.exit(1);
 }
 
 const app = createApp();
-app.listen(port, '127.0.0.1', () => {
-  console.log(`MSCMS API ready at http://localhost:${port}/api/v1/health`);
-  console.log('Staff login, member registration and membership payment recording are available.');
+const server = app.listen(config.port, config.host, () => {
+  console.log(`MSCMS API listening on ${config.host}:${config.port} (${config.mode})`);
+  console.log('Liveness: /api/v1/health; database readiness: /api/v1/ready');
 });
+server.on('error', error => {
+  console.error('API startup failed:', error?.code || 'unknown');
+  process.exitCode = 1;
+});
+let shuttingDown = false;
+async function shutDown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`${signal}: stopping API`);
+  // Stop accepting requests; finish active requests before closing database pool.
+  const guard = setTimeout(() => {
+    console.error('Shutdown exceeded 10 seconds.');
+    process.exit(1);
+  }, 10_000);
+  guard.unref();
+  try {
+    await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve()));
+    await closePool();
+    clearTimeout(guard);
+  } catch (error) {
+    console.error('Shutdown failed:', error?.code || error?.name || 'unknown');
+    process.exitCode = 1;
+  }
+}
+process.on('SIGTERM', () => { void shutDown('SIGTERM'); });
+process.on('SIGINT', () => { void shutDown('SIGINT'); });

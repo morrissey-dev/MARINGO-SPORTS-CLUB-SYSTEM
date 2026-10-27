@@ -1,0 +1,46 @@
+name: MSCMS checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: maringo_ci_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d maringo_ci_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # A checked-in lockfile should be created and npm install replaced with
+      # npm ci before considering this a reproducible release pipeline.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Unit and regression tests
+        run: npm test
+      - name: React production build
+        run: npm run build
+      - name: Isolated PostgreSQL + HTTP integration check
+        env:
+          MSCMS_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/maringo_ci_test
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+        run: npm run test:integration

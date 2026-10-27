@@ -33,10 +33,14 @@ export default function App() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/v1/health', { signal: controller.signal })
-      .then((response) => { if (!response.ok) throw new Error('API offline'); return response.json(); })
-      .then((data) => { if (data.status !== 'ok') throw new Error('Unexpected API status'); setApi({state:'ok',message:'Backend API reachable'}); })
-      .catch((e) => { if(e.name!=='AbortError') setApi({state:'error',message:'Backend unreachable. Start npm run dev:server.'}); });
+    fetch('/api/v1/ready', { signal: controller.signal })
+      .then(async (response) => {
+        if (response.status === 503) throw new Error('Database unavailable. Ask your administrator to check PostgreSQL.');
+        if (!response.ok) throw new Error('Backend not ready. Contact your administrator.');
+        return response.json();
+      })
+      .then((data) => { if (data.status !== 'ready') throw new Error('Backend is not ready.'); setApi({state:'ok',message:'Backend and database ready'}); })
+      .catch((e) => { if(e.name!=='AbortError') setApi({state:'error',message:e instanceof TypeError ? 'Cannot reach the backend. Ask your administrator.' : e.message}); });
     fetch('/api/v1/auth/me', { credentials: 'same-origin', signal: controller.signal })
       .then((r) => r.ok ? r.json() : null)
       .then((json) => { if(json?.data) setStaff(json.data); })
@@ -86,6 +90,8 @@ export default function App() {
   }
 
   return (
+    <>
+    <a className="skip-link" href="#main-content">Skip to main content</a>
     <div className="shell">
       <aside className="sidebar">
         <div className="brand"><div className="brand-mark">M</div><div><strong>Maringo</strong><small>SPORTS CLUB</small></div></div>
@@ -96,10 +102,10 @@ export default function App() {
         <div className="nav-item muted">◎ Sports & teams</div>
         <div className="nav-item muted">◎ Store & inventory</div>
         <div className="nav-item muted">◎ Events & finances</div>
-        <div className="sidebar-foot">Implementation — Part 9<br /><span>Financial reports and reconciliation</span></div>
+        <div className="sidebar-foot">Implementation — Part 11<br /><span>Financial reports and reconciliation</span></div>
       </aside>
-      <main className="content">
-        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 9</span></header>
+      <main id="main-content" className="content" tabIndex={-1}>
+        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 11</span></header>
         <div className="main-body">
           <p className="eyebrow">MARINGO COUNTY · YOUTH DEVELOPMENT</p>
           <h1>Building a better way to manage sport.</h1>
@@ -107,7 +113,7 @@ export default function App() {
           <div className="status-panel">
             <div className={`status-dot ${api.state}`} aria-hidden="true" />
             <div><strong>System connection</strong><p role="status" aria-live="polite">{api.message}</p></div>
-            <span className="status-caption">API health only, not database status</span>
+            <span className="status-caption">Database readiness status</span>
           </div>
           {!staff ? (
             <section className="auth-card" aria-label="Staff sign-in">
@@ -161,5 +167,6 @@ export default function App() {
         </div>
       </main>
     </div>
+    </>
   );
 }

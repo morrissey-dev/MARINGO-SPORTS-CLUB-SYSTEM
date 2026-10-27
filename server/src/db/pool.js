@@ -19,3 +19,12 @@ export function getPool() {
   }
   return pool;
 }
+
+// Only close an already-open pool; never initialize one merely to shut down.
+export async function closePool() {
+  if (pool) {
+    const existing = pool;
+    pool = undefined;
+    await existing.end();
+  }
+}
