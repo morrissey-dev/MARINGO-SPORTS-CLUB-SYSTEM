@@ -110,3 +110,18 @@
 .skip-link:focus{top:10px}
 :where(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #13786d;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Part 13: keyboard- and mobile-friendly role-aware work-area navigation. */
+.sidebar-nav{display:flex;flex-direction:column;gap:4px}
+.sidebar a.nav-item{text-decoration:none}
+.sidebar a.nav-item:hover,.sidebar a.nav-item:focus-visible{background:#244b53;color:#fff}
+.sidebar-empty{padding:0 12px;color:#bad0d3;font-size:12px;line-height:1.5}
+.workspace-target{scroll-margin-top:24px;min-width:0}
+.workspace-target:target{outline:2px solid #13786d;outline-offset:4px;border-radius:16px}
+@media(max-width:680px){
+  .sidebar a.nav-item.active{display:inline-flex}
+  .sidebar-nav{display:flex;flex-direction:row;gap:6px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:thin}
+  .sidebar-nav a.nav-item{display:inline-flex;white-space:nowrap;border:1px solid #49717a;padding:9px 12px;min-height:40px}
+  .sidebar .sidebar-empty{margin:8px 0}
+  .workspace-target{scroll-margin-top:12px}
+}

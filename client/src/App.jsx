@@ -8,6 +8,7 @@ import MemberDirectory from './MemberDirectory.jsx';
 import PaymentPanel from './PaymentPanel.jsx';
 import GuardianReviewPanel from './GuardianReviewPanel.jsx';
 import { useEffect, useState } from 'react';
+import { visibleWorkspaces } from './workspaceNavigation.js';
 
 const plannedModules = [
   { title: 'Membership', description: 'Registration, fee assessment and payment verification', icon: '01', phase: 'Part 4 operational' },
@@ -30,6 +31,7 @@ export default function App() {
   const [organizations,setOrganizations]=useState([]);
   const [refreshMembers,setRefreshMembers]=useState(0);
   const [refreshSports,setRefreshSports]=useState(0);
+  const workspaceLinks=visibleWorkspaces(staff?.roles);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -96,16 +98,19 @@ export default function App() {
       <aside className="sidebar">
         <div className="brand"><div className="brand-mark">M</div><div><strong>Maringo</strong><small>SPORTS CLUB</small></div></div>
         <div className="sidebar-section">WORKSPACE</div>
-        <div className="nav-item active"><span>◉</span> {staff?'Overview':'Staff sign-in'}</div>
-        <div className="sidebar-section">MODULES</div>
-        <div className="nav-item muted">● Member registration</div>
-        <div className="nav-item muted">◎ Sports & teams</div>
-        <div className="nav-item muted">◎ Store & inventory</div>
-        <div className="nav-item muted">◎ Events & finances</div>
-        <div className="sidebar-foot">Implementation — Part 11<br /><span>Financial reports and reconciliation</span></div>
+        <a className="nav-item active" href="#main-content"><span aria-hidden="true">◉</span> {staff?'Overview':'Staff sign-in'}</a>
+        {staff && <>
+          <div className="sidebar-section">YOUR WORK AREAS</div>
+          <nav className="sidebar-nav" aria-label="Work areas">
+            {workspaceLinks.length
+              ? workspaceLinks.map(item=><a key={item.id} className="nav-item" href={`#${item.id}`}>{item.label}</a>)
+              : <p className="sidebar-empty">No staff workspace for your assigned role. Ask an administrator.</p>}
+          </nav>
+        </>}
+        <div className="sidebar-foot">Implementation — Part 13<br /><span>User acceptance preparation · Development only</span></div>
       </aside>
       <main id="main-content" className="content" tabIndex={-1}>
-        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 11</span></header>
+        <header><span>Management workspace</span><span className="tag">DEVELOPMENT • PART 13</span></header>
         <div className="main-body">
           <p className="eyebrow">MARINGO COUNTY · YOUTH DEVELOPMENT</p>
           <h1>Building a better way to manage sport.</h1>
@@ -148,18 +153,18 @@ export default function App() {
               </div>
               <div className="note"><strong>Sports catalogue</strong><p>{sports.length ? `${sports.length} verified sports available: ${sports.map(s=>s.name).join(', ')}.` : 'Unable to load the sports catalogue. Run migrations and verify your database connection.'}</p></div>
               {staff.roles.some(role=>['REG','ADM'].includes(role))&&<>
-                <RegistrationPanel staff={staff} sports={sports} organizations={organizations}
+                <div id="workspace-registration" className="workspace-target"><RegistrationPanel staff={staff} sports={sports} organizations={organizations}
                   onOrganizationAdded={o=>setOrganizations(items=>[...items,o].sort((a,b)=>a.name.localeCompare(b.name)))}
-                  onCreated={()=>setRefreshMembers(n=>n+1)}/>
-                <MemberDirectory refresh={refreshMembers}/>
+                  onCreated={()=>setRefreshMembers(n=>n+1)}/></div>
+                <div id="workspace-directory" className="workspace-target"><MemberDirectory refresh={refreshMembers}/></div>
               </>}
-              {staff.roles.some(role=>['ADM','MGT'].includes(role))&&<GuardianReviewPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/>}
-              {staff.roles.some(role=>['ADM','REG','FIN','MGT'].includes(role))&&<PaymentPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/>}
-              {staff.roles.some(role=>['ADM','MGT','PAT'].includes(role))&&<SportsTeamsPanel staff={staff} sports={sports} onPatronAssigned={()=>setRefreshSports(n=>n+1)}/>}
-              {staff.roles.some(role=>['ADM','MGT','PAT','FIN'].includes(role))&&<EventsPanel staff={staff}/>}
-              {staff.roles.some(role=>['ADM','STO','FIN','MGT'].includes(role))&&<StorePanel staff={staff}/>}
-              {staff.roles.some(role=>['ADM','MGT','STO','FIN','PAT'].includes(role))&&<EquipmentPanel staff={staff}/>}
-              {staff.roles.some(role=>['ADM','MGT','FIN','REG','STO'].includes(role))&&<ReportsPanel staff={staff}/>}
+              {staff.roles.some(role=>['ADM','MGT'].includes(role))&&<div id="workspace-guardian" className="workspace-target"><GuardianReviewPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/></div>}
+              {staff.roles.some(role=>['ADM','REG','FIN','MGT'].includes(role))&&<div id="workspace-payments" className="workspace-target"><PaymentPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/></div>}
+              {staff.roles.some(role=>['ADM','MGT','PAT'].includes(role))&&<div id="workspace-teams" className="workspace-target"><SportsTeamsPanel staff={staff} sports={sports} onPatronAssigned={()=>setRefreshSports(n=>n+1)}/></div>}
+              {staff.roles.some(role=>['ADM','MGT','PAT','FIN'].includes(role))&&<div id="workspace-events" className="workspace-target"><EventsPanel staff={staff}/></div>}
+              {staff.roles.some(role=>['ADM','STO','FIN','MGT'].includes(role))&&<div id="workspace-store" className="workspace-target"><StorePanel staff={staff}/></div>}
+              {staff.roles.some(role=>['ADM','MGT','STO','FIN','PAT'].includes(role))&&<div id="workspace-equipment" className="workspace-target"><EquipmentPanel staff={staff}/></div>}
+              {staff.roles.some(role=>['ADM','MGT','FIN','REG','STO'].includes(role))&&<div id="workspace-reports" className="workspace-target"><ReportsPanel staff={staff}/></div>}
               <div className="note"><strong>Pending functionality</strong><p>Events, member fees and store transactions are available. Patron commissions are illustrative pending club policy approval. Refund processing, binding commission payouts, individual liability allocation, and full-period financial expense reporting remain future milestones. Reporting is preliminary until PostgreSQL integration is verified.</p></div>
             </>
           )}

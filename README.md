@@ -8,7 +8,7 @@ We follow the 1 Million Devs system-design sequence: **requirements → scale es
 
 ## Project status
 
-**Implementation Part 12 — local PostgreSQL onboarding documentation.** GitHub CI previously verified isolated PostgreSQL integration and the React build on a temporary runner. **This does not establish any local Windows database connection.** Follow `docs/implementation-step12.md` to connect VS Code to PostgreSQL; this documentation-only update does not deploy the system or certify it for production. Historical fees and provisional commissions are not counted as collected income.
+**Implementation Part 13 — UAT preparation and role-aware staff navigation.** Navigation is filtered by assigned roles; no backend permissions or database schema were changed. The 36-case worksheet is **not yet executed**. GitHub CI previously verified isolated PostgreSQL integration, but the local Windows PostgreSQL connection is still unverified. Not certified for production.
 
 ## Recommended repository layout
 
@@ -41,7 +41,7 @@ maringo-sports-club/
 - Step 4: `docs/data-model.md` — proposed normalized tables, primary/foreign keys, transactional boundaries, constraints and test cases.
 - Step 5: `docs/architecture.md` — modular monolith, browser/API/DB trust boundaries, business flows, security, backups, and failure handling.
 - Step 6: `docs/tradeoffs.md` — prioritized bottlenecks, architecture alternatives, test thresholds and implementation entry plan.
-- Implementation steps 1–11: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` `docs/implementation-step6.md` and `docs/implementation-step7.md`, `docs/implementation-step8.md`, `docs/implementation-step9.md`, `docs/implementation-step10.md`, and `docs/implementation-step11.md` and `docs/implementation-step12.md`.
+- Implementation steps 1–13: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` `docs/implementation-step6.md` and `docs/implementation-step7.md`, `docs/implementation-step8.md`, `docs/implementation-step9.md`, `docs/implementation-step10.md`, `docs/implementation-step11.md`, `docs/implementation-step12.md`, and `docs/implementation-step13.md`.
 - Architecture diagrams: `docs/architecture-overview.mmd`, `docs/sale-checkout-sequence.mmd`, and PNG preview.
 - ER diagrams: `docs/erd-overview.mmd`, `docs/erd-members-and-events.mmd`, `docs/erd-store-and-equipment.mmd`.
 
@@ -49,13 +49,13 @@ maringo-sports-club/
 
 ## How to run
 
-Start with **`docs/implementation-step12.md`** to connect PostgreSQL locally; then use `docs/implementation-step11.md` for deployment safeguards and isolated integration tests. In brief: install Node.js 22.12+ and PostgreSQL, run `npm install`, configure private `server/.env`, run `npm run db:check` and `npm run db:migrate`, and create an administrator using `npm run staff:create` when setting up for the first time. Start `npm run dev:server` and `npm run dev:client` in separate terminals. Run `npm test` and `npm run build`.
+Start with **`docs/implementation-step12.md`** to connect PostgreSQL locally. Prepare role-specific reviews using `docs/implementation-step13.md` and `docs/uat-cases.csv`, then use `docs/implementation-step11.md` for deployment safeguards and isolated integration tests. In brief: install Node.js 22.12+ and PostgreSQL, run `npm install`, configure private `server/.env`, run `npm run db:check` and `npm run db:migrate`, and create an administrator using `npm run staff:create` when setting up for the first time. Start `npm run dev:server` and `npm run dev:client` in separate terminals. Run `npm test` and `npm run build`.
 
 Do not commit real member records, guardians' contacts, secrets or `.env` files. Use dummy data for demos.
 
 ## Next milestone
 
-**Connect the project to a local development PostgreSQL database, apply migrations, create the first authorized admin, and verify sign-in and readiness before proceeding to user-acceptance testing.** Equipment surcharge allocation and patron commission payouts remain blocked until management approves the respective policies.
+**Complete local PostgreSQL setup and sign-in, then execute—not just prepare—the 36 UAT scenarios with fictional test records and actual staff reviewers.** Equipment surcharge allocation and patron commission payouts remain blocked until management approves the respective policies.
 
 ## Rule for source changes
 
