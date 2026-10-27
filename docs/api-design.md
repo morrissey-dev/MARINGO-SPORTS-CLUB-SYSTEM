@@ -112,6 +112,10 @@ All paths below are relative to `/api/v1` and **do not yet exist in code**. Acce
 
 ### E. Equipment
 
+> **Part 8 implementation update:** The implemented endpoints use `/api/v1/equipment/items`, `/api/v1/equipment/stock-receipts`, `/api/v1/equipment/loans`, `/api/v1/equipment/loans/{id}/issue`, `/api/v1/equipment/loans/{id}/returns`, `/api/v1/equipment/incidents`, and `/api/v1/equipment/incidents/{id}/confirm`. The original paths in this section are planning placeholders and are not implemented as aliases. See `docs/implementation-step8.md` for actual payloads, roles and safeguards. Captains do not yet have staff or self-service login. Incident assessment does not allocate debts.
+
+
+
 | Method | Path | Purpose | Who |
 |---|---|---|---|
 | POST | `/equipment-loans` | Request equipment for an event/team captain | Assigned PAT, own CAP |

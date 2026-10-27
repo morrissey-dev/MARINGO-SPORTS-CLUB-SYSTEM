@@ -311,3 +311,8 @@ Place this document at `docs/data-model.md` and diagrams at the listed paths. Re
 Suggested commit: `docs: design relational schema and ER diagrams for MSCMS`.
 
 **Next:** Step 5 system architecture (`docs/architecture.md`): components, data flows, authorization boundaries, failure handling, deployment, and why a modular monolith fits these estimates.
+
+
+## Part 8 implementation note — equipment schema
+
+Migration `008_equipment.sql` creates **separate** `equipment_types`, `equipment_balances` (available, issued, damaged, missing), `equipment_receipts`, `equipment_loans`, `equipment_loan_lines`, `equipment_returns`, `equipment_return_lines`, `equipment_incidents`, and `equipment_movements`. These tables are independent of shop `store_inventory`. A successful issue changes available → issued atomically; a return moves quantities into usable, damaged or missing buckets. Incident valuation is separate from any member charge, as liability-sharing policy remains open. See `docs/implementation-step8.md` for the implemented schema and current routes; the earlier table descriptions in this document were preliminary.
