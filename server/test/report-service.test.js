@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {getReport,reportSql} from '../src/reports/service.js';
+import {getReport,reportSql,reportParameters} from '../src/reports/service.js';
 
 const period={from:'2026-10-01',to:'2026-10-27'};
 const now=new Date('2026-10-28T12:00:00Z');
@@ -10,7 +10,8 @@ function fake(data){
     calls.push({sql,params});
     const name=Object.keys(reportSql).find(k=>reportSql[k]===sql);
     assert.ok(name,`Unknown query ${sql.slice(0,30)}`);
-    assert.equal(params.length,4);
+    const required=(sql.match(/\$(\d+)/g)??[]).map(x=>Number(x.slice(1)));
+    assert.equal(params.length,Math.max(0,...required),`Wrong SQL parameter count for ${name}`);
     return {rows:data[name]??[]};
   }};
 }
@@ -79,4 +80,17 @@ test('sports summary is a current snapshot without member private profiles',asyn
   assert.equal(r.asOf,'current');
   assert.equal(r.sports[0].sport,'Hockey');
   assert.doesNotMatch(reportSql.sports,/member_contacts|special_needs_notes/);
+});
+
+// Regression: CI against PostgreSQL caught passing 4 values to a query using
+// only $1 and $2. Mock-only tests had incorrectly accepted this for months.
+test('report parameter binding matches PostgreSQL SQL placeholders',()=>{
+  const full=['2026-09-30T21:00:00.000Z','2026-10-01T21:00:00.000Z','2026-10-01','2026-10-01'];
+  for(const [name,sql] of Object.entries(reportSql)) {
+    const actual=reportParameters(name,full);
+    const max=Math.max(0,...Array.from(sql.matchAll(/\$(\d+)/g),m=>Number(m[1])));
+    assert.equal(actual.length,max,`SQL bindings for ${name} do not match placeholders`);
+    assert.deepEqual(actual, ['ageBands','membership','events'].includes(name)?full.slice(2):
+      ['sports','equipmentBalances'].includes(name)?[]:full.slice(0,2));
+  }
 });

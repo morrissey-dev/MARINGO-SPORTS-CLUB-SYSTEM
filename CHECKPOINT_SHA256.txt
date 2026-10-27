@@ -1,4 +1,4 @@
-# Part 11 — SHA256 hashes; CHECKPOINT_SHA256.txt intentionally excluded
+# Part 11 with CI SQL-report fix — SHA256 manifest (self excluded)
 28d822e93e25aba3df941203e1d284486ae72e3d96afc21c69b12eafb09c6878  .github/workflows/ci.yml
 9bc3729a9f9c42896570c611f709ce9c2e6cab0b706acd465f2a6d533013f489  .gitignore
 f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56  .nvmrc
@@ -88,7 +88,7 @@ f4f6041d50c540215801cd923dbf18f7dada14ea044c384c5459ae2137ba72f4  server/src/pay
 a38c7d6151a0b5b4790c2f9f19a29b397c7acafc47cf0b58679eae59434c8eff  server/src/readiness.js
 405f896246fe4f4f0de37eb4ac80b23d723da8971d85eeb69a9b1dc6e5a8e31f  server/src/reports/policy.js
 0763c5fdfe1aa94be2f4324ffadfcdeff27fc4788488f1d255c081bda5898e1c  server/src/reports/routes.js
-965aaf1cbc7fdcb2d000ee170caf1d4a1daf8148a18e6233af243e24c691d995  server/src/reports/service.js
+c8c90f12aa8649eb394a381597bf7c4dff961e3fe79b62fea81168ad21501341  server/src/reports/service.js
 65a9510930fbe99c581846804ea41a576b9a2a17211c109a5565d40346e3d1b9  server/src/sports/routes.js
 1dbcd4c0c82c180f8aabc79c58af44cb7fce5bdeccb20ac55650355de3d5c831  server/src/store/policy.js
 c46fd49a9be78b0b62305c20145e5b08d92ee5d8a487a9c905c72b97b2249bfb  server/src/store/routes.js
@@ -112,7 +112,7 @@ c49ac280a1c6d31be51452d88b44cbbbc14f895baff1cc0adb965ea00d270109  server/test/pa
 8b0122c4c58a40c0a9bcd4a4f6e687215f001b1c8b94c4e50e70c908a2094dc3  server/test/policy.test.js
 f04bd75568581f669fa4984baf85f294bee35d6b5d443990336971bcc829b884  server/test/report-policy.test.js
 7ecf541dad533c3e4adc9f912a88a3dcddc3567ad7f312c873cb80302ed3f378  server/test/report-security.test.js
-8b96ed73986d9a912b6c4c316da557684486ae370b8600c821ab4a7f1e7c9efa  server/test/report-service.test.js
+10e598a9ea96830193f2723ffb27f7f5c89fca9b99904d49fa9e57750ed8ef98  server/test/report-service.test.js
 d3dd395ee51a8a7c05d29f9c5c82feaf44dcef433b104ec78d567c9627a94d5c  server/test/store-policy.test.js
 c73726a745045e72a9786cd23706778753464e0f87ec9d5ff24da231d12d12d6  server/test/store-service.test.js
 84e2b06b4ee63193623d4375de74d168dfa0d28d2933d81784d38aa1041eb038  server/test/team-policy.test.js

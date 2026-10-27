@@ -31,7 +31,7 @@ export const reportSql = {
       WHEN EXTRACT(YEAR FROM age(ms.registered_on,m.date_of_birth)) BETWEEN 26 AND 35 THEN '26-35'
       ELSE 'outside-enrollment-range' END AS age_band, COUNT(*)::int AS registrations
     FROM memberships ms JOIN members m ON m.id=ms.member_id
-    WHERE ms.registered_on >= $3::date AND ms.registered_on <= $4::date
+    WHERE ms.registered_on >= $1::date AND ms.registered_on <= $2::date
     GROUP BY age_band ORDER BY age_band`,
   sports: `SELECT s.name AS sport,s.is_active AS active, u.full_name AS current_patron,
     (SELECT COUNT(*)::int FROM member_sport_preferences pref WHERE pref.sport_id=s.id) AS interested_members,
@@ -50,7 +50,7 @@ export const reportSql = {
       SELECT COALESCE(SUM(a.amount),0) AS collected FROM payment_allocations a
       JOIN payments p ON p.id=a.payment_id WHERE a.charge_id=c.id AND p.status='verified'
     ) paid ON TRUE
-    WHERE ms.registered_on >= $3::date AND ms.registered_on <= $4::date
+    WHERE ms.registered_on >= $1::date AND ms.registered_on <= $2::date
     GROUP BY ms.registration_type ORDER BY ms.registration_type`,
   sales: `SELECT COUNT(*)::int AS completed_sales,
     COALESCE(SUM(s.subtotal),0)::numeric(14,2)::text AS subtotal,
@@ -98,7 +98,7 @@ export const reportSql = {
     (ROUND(COALESCE(f.collected,0)*0.20,2))::text AS commission_on_collected
     FROM sporting_events e JOIN sports sp ON sp.id=e.sport_id JOIN teams t ON t.id=e.team_id
     LEFT JOIN fee_totals f ON f.event_id=e.id
-    WHERE e.event_date >= $3::date AND e.event_date <= $4::date
+    WHERE e.event_date >= $1::date AND e.event_date <= $2::date
     ORDER BY e.event_date DESC,e.id DESC LIMIT 101`,
   equipmentBalances: `SELECT et.code,et.name,b.available_qty,b.issued_qty,b.damaged_qty,b.missing_qty
     FROM equipment_types et JOIN equipment_balances b ON b.equipment_type_id=et.id
@@ -114,8 +114,18 @@ export const reportSql = {
     JOIN equipment_returns er ON er.id=erl.return_id`
 };
 
+// PostgreSQL binds exactly as many parameters as a statement declares.
+// Some reports use civil DATE boundaries, others UTC timestamps; snapshot
+// queries use none. Never pass unused placeholders (PostgreSQL rejects them).
+const CIVIL_DAY_REPORTS = new Set(['ageBands','membership','events']);
+const SNAPSHOT_REPORTS = new Set(['sports','equipmentBalances']);
+export function reportParameters(name,periodParams) {
+  if (SNAPSHOT_REPORTS.has(name)) return [];
+  if (CIVIL_DAY_REPORTS.has(name)) return periodParams.slice(2,4);
+  return periodParams.slice(0,2);
+}
 async function run(pool, name, params) {
-  const result = await pool.query(reportSql[name],params);
+  const result = await pool.query(reportSql[name],reportParameters(name,params));
   return result.rows;
 }
 function basic(type,period){return {type,period:{from:period.from,to:period.to,timeZone:'Africa/Nairobi'}};}
