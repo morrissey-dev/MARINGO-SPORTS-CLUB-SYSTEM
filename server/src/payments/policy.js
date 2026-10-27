@@ -15,7 +15,7 @@ export function centsToMoney(cents) {
 export function validatePayment(body) {
   if (!body || typeof body!=='object' || Array.isArray(body)) throw new InputError('INVALID_PAYMENT','Payment details are required.');
   const chargeId=parseId(body.chargeId);
-  if(!chargeId) throw new InputError('INVALID_CHARGE','Choose a valid membership charge.');
+  if(!chargeId) throw new InputError('INVALID_CHARGE','Choose a valid charge.');
   const amount=centsToMoney(moneyToCents(body.amount));
   if(!['cash','mobile_money'].includes(body.method)) throw new InputError('INVALID_METHOD','Choose cash or mobile money.');
   let reference=null;

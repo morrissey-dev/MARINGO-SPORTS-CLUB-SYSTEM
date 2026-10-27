@@ -8,7 +8,7 @@ We follow the 1 Million Devs system-design sequence: **requirements → scale es
 
 ## Project status
 
-**Implementation — Part 5 prepared.** Parts 1–4 remain intact. Added sport-patron history, teams, team members, captain assignments, scoped staff APIs and a sports/teams interface. **41 Node unit/mock-service tests pass; actual PostgreSQL/API integration and frontend build still require local verification.**
+**Implementation Part 6 — Sporting events, rosters, external facilitation fee assessment and provisional patron commission reporting.** Parts 1–5, including authentication, membership registration, payment verification and sports teams, remain intact. Added migration `006_events_facilitation.sql`, event API/service, React events screen and tests. **50 Node unit/mock-service tests pass; actual PostgreSQL API integration and frontend build must still be verified locally.**
 
 ## Recommended repository layout
 
@@ -41,19 +41,21 @@ maringo-sports-club/
 - Step 4: `docs/data-model.md` — proposed normalized tables, primary/foreign keys, transactional boundaries, constraints and test cases.
 - Step 5: `docs/architecture.md` — modular monolith, browser/API/DB trust boundaries, business flows, security, backups, and failure handling.
 - Step 6: `docs/tradeoffs.md` — prioritized bottlenecks, architecture alternatives, test thresholds and implementation entry plan.
-- Implementation steps 1–5: `docs/implementation-step1.md` through `docs/implementation-step5.md`.
+- Implementation steps 1–6: `docs/implementation-step1.md`, `docs/implementation-step2.md`, `docs/implementation-step3.md`, `docs/implementation-step4.md`, `docs/implementation-step5.md` and `docs/implementation-step6.md`.
 - Architecture diagrams: `docs/architecture-overview.mmd`, `docs/sale-checkout-sequence.mmd`, and PNG preview.
 - ER diagrams: `docs/erd-overview.mmd`, `docs/erd-members-and-events.mmd`, `docs/erd-store-and-equipment.mmd`.
 
 **Key unresolved questions:** The source lists 15 sports but says 16; membership duration, guardian consent, commission accounting basis, equipment surcharge allocation, and payment verification/reversal procedures require approval.
 
-## How to run the starter
+## How to run
 
-Read **`docs/implementation-step5.md`** for current instructions. In brief: `npm install`, configure `server/.env` (including random `CSRF_SECRET` and `APP_ORIGIN`), `npm run db:check`, `npm run db:migrate`, and `npm run staff:create` (interactive). Then run `npm run dev:server` and `npm run dev:client` in separate terminals. Run `npm test`.
+Read **`docs/implementation-step6.md`** for current instructions. In brief: install Node.js 22.12+ and PostgreSQL, run `npm install`, configure private `server/.env`, run `npm run db:check` and `npm run db:migrate`, and create an administrator using `npm run staff:create` when setting up for the first time. Start `npm run dev:server` and `npm run dev:client` in separate terminals. Run `npm test` and `npm run build`.
 
-## Next task
+Do not commit real member records, guardians' contacts, secrets or `.env` files. Use dummy data for demos.
 
-Implement sports events, rosters and facilitation fees as the next increment, after agreeing on fee/commission policy. Bulk group uploads, payment gateway integration, sales, equipment and reports remain future milestones; see `docs/implementation-step5.md` for constraints and local test checklist.
+## Next milestone
+
+Part 7 — Store catalogue, stock receipts, sales and discount calculations with transactional inventory safeguards. Patron commission payouts remain blocked until management approves the fee basis.
 
 ## Rule for source changes
 

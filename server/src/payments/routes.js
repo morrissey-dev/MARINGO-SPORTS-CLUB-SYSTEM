@@ -8,7 +8,7 @@ function bad(res,error){
   const notFound=['PAYMENT_NOT_FOUND','CHARGE_NOT_FOUND'].includes(error.code);
   const conflict=['IDEMPOTENCY_CONFLICT','CHARGE_ALREADY_PAID','CHARGE_VOID','OVERPAYMENT',
     'MAKER_CHECKER_REQUIRED','PAYMENT_NOT_PENDING','PAYMENT_NOT_VERIFIED'].includes(error.code);
-  return res.status(notFound?404:conflict?409:422).json({error:{code:error.code,message:error.message}});
+  return res.status(error.code==='FORBIDDEN'?403:notFound?404:conflict?409:422).json({error:{code:error.code,message:error.message}});
 }
 
 export function paymentsRouter(){
@@ -60,7 +60,7 @@ export function paymentsRouter(){
   });
   router.post('/',requireRole('ADM','REG','FIN'),requireSameOrigin,requireCsrf,async(req,res,next)=>{
     try{
-      const result=await recordPayment(getPool(),{actorId:req.staff.user_id,body:req.body,key:req.get('Idempotency-Key')});
+      const result=await recordPayment(getPool(),{actorId:req.staff.user_id,roles:req.staff.roles,body:req.body,key:req.get('Idempotency-Key')});
       return res.status(result.status).json({data:result.data,replayed:result.replayed});
     }catch(e){if(e instanceof InputError)return bad(res,e);
       if(e.code==='23505')return res.status(409).json({error:{code:'DUPLICATE_REFERENCE',message:'Mobile-money reference already recorded. Search payments instead.'}});

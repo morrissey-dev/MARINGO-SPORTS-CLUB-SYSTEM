@@ -10,12 +10,21 @@ async function begin(client){ await client.query('BEGIN'); }
 async function rollback(client){ try { await client.query('ROLLBACK'); } catch {} }
 
 async function findCharge(client,chargeId){
-  const result=await client.query(`SELECT c.id,c.member_id,c.amount,c.status,mc.membership_id
+  // Preserve the proven membership query, then handle external-match fees separately.
+  const membership=await client.query(`SELECT c.id,c.member_id,c.amount,c.status,mc.membership_id
     FROM charges c JOIN membership_charges mc ON mc.charge_id=c.id
     WHERE c.id=$1 AND c.charge_type='membership' FOR UPDATE OF c`,[chargeId]);
-  if(!result.rowCount) throw conflict('CHARGE_NOT_FOUND','Membership charge not found.');
-  if(result.rows[0].status==='void') throw conflict('CHARGE_VOID','This charge is void.');
-  return result.rows[0];
+  let charge;
+  if(membership.rowCount)charge={...membership.rows[0],charge_type:'membership'};
+  else {
+    const external=await client.query(`SELECT c.id,c.member_id,c.amount,c.status,c.charge_type
+      FROM charges c JOIN facilitation_charges fc ON fc.charge_id=c.id
+      WHERE c.id=$1 AND c.charge_type='facilitation' FOR UPDATE OF c`,[chargeId]);
+    if(!external.rowCount)throw conflict('CHARGE_NOT_FOUND','Supported charge not found.');
+    charge=external.rows[0];
+  }
+  if(charge.status==='void')throw conflict('CHARGE_VOID','This charge is void.');
+  return charge;
 }
 async function collectedCents(client,chargeId){
   // Reversed allocations are intentionally not counted. The ledger rows themselves remain.
@@ -37,6 +46,10 @@ export async function reconcileCharge(client,charge){
   if(collected>billed) throw new Error('Financial integrity mismatch: verified receipts exceed charge');
   const paid=collected===billed;
   await client.query(`UPDATE charges SET status=$2 WHERE id=$1`,[charge.id,paid?'paid':'outstanding']);
+  // A facilitation fee is independent of membership activation.
+  // Patron commission projections are calculated from verified allocations when read.
+  if(charge.charge_type==='facilitation')return {collected:centsToMoney(collected),
+    balance:centsToMoney(billed-collected),chargeStatus:paid?'paid':'outstanding'};
   // Membership is active only once the charge is fully paid and consent is satisfied.
   const member=await client.query(`SELECT m.id,m.date_of_birth,m.status,
     EXISTS(SELECT 1 FROM guardian_consents g WHERE g.member_id=m.id AND g.status='verified') AS has_consent
@@ -56,7 +69,7 @@ export async function reconcileCharge(client,charge){
   return {collected:centsToMoney(collected),balance:centsToMoney(billed-collected),membershipStatus:active?'active':'pending',memberStatus:m.status==='inactive'?'inactive':active?'active':consentOk?'draft':'pending_consent'};
 }
 
-export async function recordPayment(pool,{actorId,body,key}){
+export async function recordPayment(pool,{actorId,roles,body,key}){
   const keyHash=idempotencyKey(key);
   if(!body || typeof body!=='object'||Array.isArray(body)) throw conflict('INVALID_PAYMENT','Payment details are required.');
   const payloadHash=digest(stableJson(body));
@@ -72,7 +85,9 @@ export async function recordPayment(pool,{actorId,body,key}){
     if(existing.response_status){await client.query('COMMIT');return {status:existing.response_status,data:existing.response_json,replayed:true};}
     const validated=validatePayment(body);
     const charge=await findCharge(client,validated.chargeId);
-    if(charge.status==='paid') throw conflict('CHARGE_ALREADY_PAID','This membership charge is already fully paid.');
+    if(charge.charge_type==='facilitation' && !roles?.some(r=>['FIN','ADM'].includes(r)))
+      throw conflict('FORBIDDEN','Only finance or administrators may record external-match fees.');
+    if(charge.status==='paid') throw conflict('CHARGE_ALREADY_PAID','This charge is already fully paid.');
     const billed=moneyToCents(String(charge.amount));
     const paid=await collectedCents(client,charge.id);
     if(moneyToCents(validated.amount)>billed-paid) throw conflict('OVERPAYMENT','Payment amount exceeds the unpaid membership balance.');

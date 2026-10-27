@@ -1,3 +1,4 @@
+import EventsPanel from './EventsPanel.jsx';
 import SportsTeamsPanel from './SportsTeamsPanel.jsx';
 import RegistrationPanel from './RegistrationPanel.jsx';
 import MemberDirectory from './MemberDirectory.jsx';
@@ -9,7 +10,7 @@ const plannedModules = [
   { title: 'Membership', description: 'Registration, fee assessment and payment verification', icon: '01', phase: 'Part 4 operational' },
   { title: 'Sports and teams', description: 'Patron assignments, teams and captains', icon: '02', phase: 'Part 5 operational' },
   { title: 'Store and sales', description: 'Products, receipts, stock alerts', icon: '03', phase: 'Planned' },
-  { title: 'Events and fees', description: 'Fixtures, charges, commissions', icon: '04', phase: 'Planned' },
+  { title: 'Events and fees', description: 'Fixtures, roster finalization and facilitation fee tracking', icon: '04', phase: 'Part 6 operational' },
   { title: 'Equipment', description: 'Issuance, returns, surcharges', icon: '05', phase: 'Planned' },
   { title: 'Reports', description: 'Revenue, participation, inventory', icon: '06', phase: 'Planned' },
 ];
@@ -127,7 +128,7 @@ export default function App() {
                 <button onClick={signOut} disabled={busy}>{busy?'Signing out…':'Sign out'}</button>
               </section>
               {error && <p role="alert" className="auth-error">{error}</p>}
-              <div className="section-heading"><div><h2>Development modules</h2><p>Registration, payments, sport patrons and team rosters are implemented. Other modules are planned.</p></div><span className="count">6 modules</span></div>
+              <div className="section-heading"><div><h2>Development modules</h2><p>Registration, payments, teams and sporting events are implemented. Store and equipment modules remain planned.</p></div><span className="count">6 modules</span></div>
               <div className="cards">
                 {plannedModules.map(item=>(
                   <article className="module" key={item.title}>
@@ -146,7 +147,8 @@ export default function App() {
               {staff.roles.some(role=>['ADM','MGT'].includes(role))&&<GuardianReviewPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/>}
               {staff.roles.some(role=>['ADM','REG','FIN','MGT'].includes(role))&&<PaymentPanel staff={staff} onUpdated={()=>setRefreshMembers(n=>n+1)}/>}
               {staff.roles.some(role=>['ADM','MGT','PAT'].includes(role))&&<SportsTeamsPanel staff={staff} sports={sports} onPatronAssigned={()=>setRefreshSports(n=>n+1)}/>}
-              <div className="note"><strong>Pending functionality</strong><p>Sports patron assignment and team management are now available. Bulk group import, sports events and store sales are future milestones. Use verified payments only for income reporting.</p></div>
+              {staff.roles.some(role=>['ADM','MGT','PAT','FIN'].includes(role))&&<EventsPanel staff={staff}/>}
+              <div className="note"><strong>Pending functionality</strong><p>Events and facilitation fees are available. Commission amounts are illustrative only pending club policy approval. Store sales, equipment and comprehensive reports remain future milestones.</p></div>
             </>
           )}
           <footer>MSCMS · Guided by AI Safari and 1 Million Devs</footer>

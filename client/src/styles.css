@@ -60,3 +60,20 @@
 .team-form th,.team-form td{padding:10px;border-bottom:1px solid #dce6e8;text-align:left}
 .team-form th{background:#ebf2f2}
 @media(max-width:700px){.sports-teams-panel{padding:15px}.team-row{grid-template-columns:1fr}}
+
+/* Part 6: sports event scheduling, roster, facilitation and provisional commissions. */
+.events-panel{margin-top:28px;padding:24px;background:#fff;border:1px solid #dce6e8;border-radius:16px}
+.events-panel h2{margin:0 0 9px}.events-panel h3{margin:0 0 14px}.events-panel h4{margin:0 0 12px}
+.event-section{padding:18px;margin:18px 0;border:1px solid #dce6e8;background:#f9fbfb;border-radius:12px}
+.event-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.event-section label{display:flex;flex-direction:column;font-weight:650;font-size:13px;gap:7px}
+.event-section input,.event-section select{font:inherit;font-size:13px;padding:10px;border:1px solid #91a6ae;background:white;border-radius:8px;width:100%;min-width:0;min-height:42px}
+.event-section button{font:inherit;font-size:13px;font-weight:700;background:#19504b;color:white;border:0;border-radius:8px;padding:11px 15px;cursor:pointer}
+.event-section button:disabled{opacity:.55;cursor:not-allowed}
+.event-inline{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-bottom:15px}
+.event-section table{border-collapse:collapse;width:100%;min-width:600px;font-size:13px;margin-bottom:16px}
+.event-section th,.event-section td{padding:10px;text-align:left;border-bottom:1px solid #dfebed}
+.event-section th{background:#e9f2f2}
+.event-warning{padding:14px;background:#fff6e6;border:1px solid #efdab0;border-radius:9px;font-size:13px}
+.event-warning p{line-height:1.5;margin:8px 0 0}
+@media(max-width:700px){.events-panel{padding:16px}.event-fields{grid-template-columns:1fr}}
